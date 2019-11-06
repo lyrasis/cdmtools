@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["kristina.spurgin@lyrasis.org"]
 
   spec.summary       = 'Get and manipulate data from a CONTENTdm API instance'
-  spec.homepage      = 'https://github.com/lyrasis/migration-miscellany/tree/master/cdmtools'
+  spec.homepage      = 'https://github.com/lyrasis/cdmtools'
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
@@ -19,8 +19,8 @@ Gem::Specification.new do |spec|
     spec.metadata["allowed_push_host"] = "TODO: Set to 'http://mygemserver.com'"
 
     spec.metadata["homepage_uri"] = spec.homepage
-    spec.metadata["source_code_uri"] = "https://github.com/lyrasis/migration-miscellany/tree/master/cdmtools"
-    spec.metadata["changelog_uri"] = "https://github.com/lyrasis/migration-miscellany/tree/master/cdmtools"
+    spec.metadata["source_code_uri"] = "https://github.com/lyrasis/cdmtools"
+    spec.metadata["changelog_uri"] = "https://github.com/lyrasis//cdmtools"
   else
     raise "RubyGems 2.0 or newer is required to protect against " \
       "public gem pushes."
@@ -35,10 +35,10 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", "~> 1.17"
+  spec.add_development_dependency "bundler", ">= 2.0.2"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
 
-  spec.add_runtime_dependency "progressbar", "~> 1.10.1"
-  spec.add_runtime_dependency "thor", "~> 0.20.3"
+  spec.add_runtime_dependency "progressbar", ">= 1.10.1"
+  spec.add_runtime_dependency "thor", ">= 0.20.3"
 end

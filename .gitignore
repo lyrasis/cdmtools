@@ -1,7 +1,7 @@
+Gemfile.lock
 **/config.yaml
 */.bundle/
 */.yardoc
-*/Gemfile.lock
 */_yardoc/
 */coverage/
 */doc/

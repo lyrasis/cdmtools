@@ -1,0 +1,73 @@
+= Cdmtools
+
+Set of commands/tools to grab data (and eventually objects) from a CONTENTdm instance via https://www.oclc.org/support/services/contentdm/help/customizing-website-help/other-customizations/contentdm-api-reference.en.html[the server and web APIs].
+
+
+== Installation
+
+=== Dependencies
+
+- You will need Ruby
+- You will need a recent-ish version of bundler (`gem install bundler` will install if you don't have it, update it if you do)
+- You will need https://github.com/mjordan/cdminspect[cdminspect] installed somewhere this application can find it
+
+=== Steps
+Clone this repo.
+
+`cd` into the resulting directory
+
+`bundle install`
+
+Copy `config/config.yaml.example` to `config/config.yaml` and edit the new file with your details.
+
+== Usage
+
+For the available commands:
+
+`exe/cdm help`
+
+For details on exactly what each command does:
+
+`exe/cdm help [COMMAND]`
+
+This command currently is the best documentation for each step. Later, I will add some more info to https://github.com/lyrasis/cdmtools/wiki[the repo wiki].
+
+=== Recommended initial order of commands for working with a new CDM instance
+
+- get_coll_data
+- get_dc_mappings
+- get_field_data
+
+At this point, you can see the number of collections you are working with and the way the metadata fields have been defined for them.
+
+- get_top_records
+
+Check your logfile for any errors or warnings at this point and resolve them before continuing, or your problems will just be compounded.
+
+The tool creates a local JSON file for each successful API call, and tries to be pretty good at not making additional API calls to replace info you already have.
+
+This means you can just re-run the above command to try to re-grab any records that could not be retrieved before. It will work fast and only grab what is missing. It also currently means that, if you want to refresh the records from the source, you will need to delete the local copies in `collalias/_cdmrecords`
+
+(I'd like to eventually add an "force refresh of data" flag, and also allow you to specify this function should run only on the collection alias(es) you enter)
+
+- get_child_records
+
+Again, check your logfile after this step
+
+- (TODO) compile_object_inventory
+
+The above function still needs to be added. Coming soon!
+
+- finalize_records
+- process_field_values
+
+The latter function is kind of amorphous right now and will probably be broken up into other functions as I get clearer on what makes the most sense here. 
+
+
+== Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/[lyrasis]/cdmtools.
+
+== License
+
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
