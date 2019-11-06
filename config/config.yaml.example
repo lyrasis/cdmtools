@@ -15,7 +15,7 @@ logfile: /opt/migrations/clientdirectory/cdm/cdmtools.log
 # number of seconds to sleep after each api call
 sleeptime: 0.15
 
-# do not compile data on field values or types for field names beginning with (or equaling)
+# do not compile data/stats/reports on field values or types for field names beginning with (or equaling)
 #  any of the following
 ignore_field_prefixes:
   - mig

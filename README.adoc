@@ -66,8 +66,8 @@ The latter function is kind of amorphous right now and will probably be broken u
 
 == Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[lyrasis]/cdmtools.
+Bug reports and pull requests are welcome in https://github.com/lyrasis/cdmtools[the GitHub repo].
 
 == License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the https://opensource.org/licenses/MIT[MIT License].
