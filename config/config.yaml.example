@@ -1,0 +1,26 @@
+# base working directory for the project
+# full field list and collections list will be saved here
+# a subdirectory for each collection will be created in this directory
+wrk_dir: /opt/migrations/clientdirectory
+
+# CONTENTdm web services URL base
+cdm_ws_url: https://server12345.contentdm.oclc.org/dmwebservices/index.php?q=
+
+# cdminspect directory path -- cdminspect is available from https://github.com/mjordan/cdminspect
+cdminspectpath: /home/username/code/cdminspect
+
+# path to application log file
+logfile: /opt/migrations/clientdirectory/cdm/cdmtools.log
+
+# number of seconds to sleep after each api call
+sleeptime: 0.15
+
+# do not compile data on field values or types for field names beginning with (or equaling)
+#  any of the following
+ignore_field_prefixes:
+  - mig
+  - dm
+  - cdm
+  - fullrs
+  - find
+  - restrictionCode
