@@ -24,7 +24,7 @@ module Cdmtools
         }
 
         # delete \n in string values
-        rec.each{ |field, value| value.gsub!(/\\n/, ' ') if value.is_a?(String) }
+        rec.each{ |field, value| value.gsub!("\n", ' ') if value.is_a?(String) }
 
         # collapse spaces in string values
         rec.each{ |field, value| value.squeeze!(' ') if value.is_a?(String) }
