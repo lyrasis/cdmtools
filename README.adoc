@@ -63,6 +63,13 @@ The above function still needs to be added. Coming soon!
 
 The latter function is kind of amorphous right now and will probably be broken up into other functions as I get clearer on what makes the most sense here. 
 
+Currently, it produces a .csv file per collection with one row for every field in every record. Data in each row: collection, field, field value (literal -- not split on delimiters like cdminspect will do), record id (`collection/pointer`).
+
+Finally, it concatenates all the individual collection files together into one _fieldvalues.csv file in the main working directory.
+
+I'm finding it useful to convert the big file into a sqlite database using https://github.com/simonw/csvs-to-sqlite[csvs-to-sqlite], and then do faceted browsing of the database with https://datasette.readthedocs.io/en/stable/[Datasette].
+
+
 
 == Contributing
 

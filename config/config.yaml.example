@@ -24,3 +24,12 @@ ignore_field_prefixes:
   - fullrs
   - find
   - restrictionCode
+
+# multivalued field delimiter
+mv_delimiter: ;
+
+# list of fields you determine cannot be treated as multivalued based on the delimiter above
+# These will likely include notes fields where semicolons or commas are part of the content,
+#  as well as extent fields recorded according to ISBD rules
+not_multivalued:
+  - transc

@@ -8,6 +8,9 @@ module Cdmtools
     attr_reader :logfile
     attr_reader :sleeptime
     attr_reader :ignore_field_prefixes
+    attr_reader :mv_delimiter
+    attr_reader :not_multivalued
+    attr_reader :replacements
     
     def initialize
       config = YAML.load_file('config/config.yaml')
@@ -17,6 +20,9 @@ module Cdmtools
       @logfile = config['logfile']
       @sleeptime = config['sleeptime']
       @ignore_field_prefixes = config['ignore_field_prefixes']
+      @mv_delimiter = config['mv_delimiter']
+      @not_multivalued = config['not_multivalued']
+      @replacements = config['replacements']
     end
   end
 
