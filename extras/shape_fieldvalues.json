@@ -1,0 +1,1016 @@
+[
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "baseColumnName": "field",
+    "expression": "grel:value + \" = \" + cells['fieldvalue'].value",
+    "onError": "set-to-blank",
+    "newColumnName": "fieldnamePlusValue",
+    "columnInsertIndex": 2,
+    "description": "Create column fieldnamePlusValue at index 2 based on column field using expression grel:value + \" = \" + cells['fieldvalue'].value"
+  },
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "baseColumnName": "fieldvalue",
+    "expression": "grel:length(value)",
+    "onError": "set-to-blank",
+    "newColumnName": "fieldvalueLength",
+    "columnInsertIndex": 4,
+    "description": "Create column fieldvalueLength at index 4 based on column fieldvalue using expression grel:length(value)"
+  },
+  {
+    "op": "core/column-move",
+    "columnName": "recordid",
+    "index": 0,
+    "description": "Move column recordid to position 0"
+  },
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "baseColumnName": "recordid",
+    "expression": "grel:value",
+    "onError": "set-to-blank",
+    "newColumnName": "recordIDForOR",
+    "columnInsertIndex": 1,
+    "description": "Create column recordIDForOR at index 1 based on column recordid using expression grel:value"
+  },
+  {
+    "op": "core/column-move",
+    "columnName": "recordIDForOR",
+    "index": 0,
+    "description": "Move column recordIDForOR to position 0"
+  },
+  {
+    "op": "core/row-reorder",
+    "mode": "row-based",
+    "sorting": {
+      "criteria": [
+        {
+          "valueType": "string",
+          "column": "recordIDForOR",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        }
+      ]
+    },
+    "description": "Reorder rows"
+  },
+  {
+    "op": "core/blank-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "recordIDForOR",
+    "description": "Blank down cells in column recordIDForOR"
+  },
+  {
+    "op": "core/column-rename",
+    "oldColumnName": "recordIDForOR",
+    "newColumnName": "OpenRefineRecID",
+    "description": "Rename column recordIDForOR to OpenRefineRecID"
+  },
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "field",
+          "expression": "value",
+          "columnName": "field",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "cdmprintpdf",
+                "l": "cdmprintpdf"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        },
+        {
+          "type": "list",
+          "name": "fieldnamePlusValue",
+          "expression": "value",
+          "columnName": "fieldnamePlusValue",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "cdmprintpdf = 1",
+                "l": "cdmprintpdf = 1"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "record-based"
+    },
+    "baseColumnName": "fieldvalueLength",
+    "expression": "grel:true",
+    "onError": "set-to-blank",
+    "newColumnName": "hasPrintPDF?",
+    "columnInsertIndex": 7,
+    "description": "Create column hasPrintPDF? at index 7 based on column fieldvalueLength using expression grel:true"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "hasPrintPDF?",
+          "expression": "isBlank(value)",
+          "columnName": "hasPrintPDF?",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": true,
+                "l": "true"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "record-based"
+    },
+    "columnName": "hasPrintPDF?",
+    "expression": "grel:false",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column hasPrintPDF? using expression grel:false"
+  },
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "field",
+          "expression": "value",
+          "columnName": "field",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "cdmhasocr",
+                "l": "cdmhasocr"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        },
+        {
+          "type": "list",
+          "name": "fieldnamePlusValue",
+          "expression": "value",
+          "columnName": "fieldnamePlusValue",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "cdmhasocr = 1",
+                "l": "cdmhasocr = 1"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "record-based"
+    },
+    "baseColumnName": "hasPrintPDF?",
+    "expression": "grel:true",
+    "onError": "set-to-blank",
+    "newColumnName": "hasOCR?",
+    "columnInsertIndex": 8,
+    "description": "Create column hasOCR? at index 8 based on column hasPrintPDF? using expression grel:true"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "hasOCR?",
+          "expression": "isBlank(value)",
+          "columnName": "hasOCR?",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": true,
+                "l": "true"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "record-based"
+    },
+    "columnName": "hasOCR?",
+    "expression": "grel:false",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column hasOCR? using expression grel:false"
+  },
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "field",
+          "expression": "value",
+          "columnName": "field",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "migfiletype",
+                "l": "migfiletype"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "baseColumnName": "fieldvalue",
+    "expression": "grel:value",
+    "onError": "set-to-blank",
+    "newColumnName": "fileType",
+    "columnInsertIndex": 6,
+    "description": "Create column fileType at index 6 based on column fieldvalue using expression grel:value"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "migfiletype"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "000migfiletype"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "expression": "grel:cells['recordid'].value",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column OpenRefineRecID using expression grel:cells['recordid'].value"
+  },
+  {
+    "op": "core/row-reorder",
+    "mode": "row-based",
+    "sorting": {
+      "criteria": [
+        {
+          "valueType": "string",
+          "column": "recordid",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        },
+        {
+          "valueType": "string",
+          "column": "field",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        }
+      ]
+    },
+    "description": "Reorder rows"
+  },
+  {
+    "op": "core/blank-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Blank down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "000migfiletype"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "migfiletype"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "fileType",
+    "expression": "grel:row.record.cells['fieldvalue'].value[0]",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column fileType using expression grel:row.record.cells['fieldvalue'].value[0]"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "migobjlevel"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "000migobjlevel"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Fill down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/row-reorder",
+    "mode": "row-based",
+    "sorting": {
+      "criteria": [
+        {
+          "valueType": "string",
+          "column": "recordid",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        },
+        {
+          "valueType": "string",
+          "column": "field",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        }
+      ]
+    },
+    "description": "Reorder rows"
+  },
+  {
+    "op": "core/blank-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Blank down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "baseColumnName": "fieldvalue",
+    "expression": "grel:row.record.cells['fieldvalue'].value[0]",
+    "onError": "set-to-blank",
+    "newColumnName": "objectLevel",
+    "columnInsertIndex": 6,
+    "description": "Create column objectLevel at index 6 based on column fieldvalue using expression grel:row.record.cells['fieldvalue'].value[0]"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Fill down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "000migobjlevel"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "migobjlevel"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "migobjcategory"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "000migobjcategory"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/row-reorder",
+    "mode": "row-based",
+    "sorting": {
+      "criteria": [
+        {
+          "valueType": "string",
+          "column": "recordid",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        },
+        {
+          "valueType": "string",
+          "column": "field",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        }
+      ]
+    },
+    "description": "Reorder rows"
+  },
+  {
+    "op": "core/blank-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Blank down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "baseColumnName": "fieldvalue",
+    "expression": "grel:row.record.cells['fieldvalue'].value[0]",
+    "onError": "set-to-blank",
+    "newColumnName": "objCategory",
+    "columnInsertIndex": 6,
+    "description": "Create column objCategory at index 6 based on column fieldvalue using expression grel:row.record.cells['fieldvalue'].value[0]"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "000migobjcategory"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "migobjcategory"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "field",
+          "expression": "value",
+          "columnName": "field",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "migparentptr",
+                "l": "migparentptr"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "columnName": "fieldvalue",
+    "expression": "grel:cells['coll'].value + '/' + value",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column fieldvalue using expression grel:cells['coll'].value + '/' + value"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "field",
+          "expression": "value",
+          "columnName": "field",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "migparentptr",
+                "l": "migparentptr"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "columnName": "fieldnamePlusValue",
+    "expression": "grel:cells['field'].value + \" = \" + cells['fieldvalue'].value",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column fieldnamePlusValue using expression grel:cells['field'].value + \" = \" + cells['fieldvalue'].value"
+  },
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "fileType",
+          "expression": "value",
+          "columnName": "fileType",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "cpd",
+                "l": "cpd"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "baseColumnName": "recordid",
+    "expression": "grel:value",
+    "onError": "set-to-blank",
+    "newColumnName": "compObjCluster",
+    "columnInsertIndex": 2,
+    "description": "Create column compObjCluster at index 2 based on column recordid using expression grel:value"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "fileType",
+          "expression": "value",
+          "columnName": "fileType",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "cpd",
+                "l": "cpd"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Fill down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "migparentptr"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "000migparentptr"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Fill down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/row-reorder",
+    "mode": "row-based",
+    "sorting": {
+      "criteria": [
+        {
+          "valueType": "string",
+          "column": "recordid",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        },
+        {
+          "valueType": "string",
+          "column": "field",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        }
+      ]
+    },
+    "description": "Reorder rows"
+  },
+  {
+    "op": "core/blank-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Blank down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "field",
+          "expression": "value",
+          "columnName": "field",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "000migparentptr",
+                "l": "000migparentptr"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "record-based"
+    },
+    "columnName": "compObjCluster",
+    "expression": "grel:row.record.cells['fieldvalue'].value[0]",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column compObjCluster using expression grel:row.record.cells['fieldvalue'].value[0]"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "000migparentptr"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "migparentptr"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "compObjCluster",
+          "expression": "isBlank(value)",
+          "columnName": "compObjCluster",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": true,
+                "l": "true"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "columnName": "compObjCluster",
+    "expression": "grel:\"n/a\"",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column compObjCluster using expression grel:\"n/a\""
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Fill down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "migcompobjtype"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "000migcompobjtype"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/row-reorder",
+    "mode": "row-based",
+    "sorting": {
+      "criteria": [
+        {
+          "valueType": "string",
+          "column": "recordid",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        },
+        {
+          "valueType": "string",
+          "column": "field",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        }
+      ]
+    },
+    "description": "Reorder rows"
+  },
+  {
+    "op": "core/blank-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Blank down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "field",
+          "expression": "value",
+          "columnName": "field",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "000migcompobjtype",
+                "l": "000migcompobjtype"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "record-based"
+    },
+    "columnName": "fileType",
+    "expression": "grel:row.record.cells['fieldvalue'].value[0] + \" (cpd)\"",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column fileType using expression grel:row.record.cells['fieldvalue'].value[0] + \" (cpd)\""
+  },
+  {
+    "op": "core/mass-edit",
+    "engineConfig": {
+      "facets": [],
+      "mode": "record-based"
+    },
+    "columnName": "field",
+    "expression": "value",
+    "edits": [
+      {
+        "from": [
+          "000migcompobjtype"
+        ],
+        "fromBlank": false,
+        "fromError": false,
+        "to": "migcompobjtype"
+      }
+    ],
+    "description": "Mass edit cells in column field"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Fill down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/row-reorder",
+    "mode": "row-based",
+    "sorting": {
+      "criteria": [
+        {
+          "valueType": "string",
+          "column": "recordid",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        },
+        {
+          "valueType": "string",
+          "column": "field",
+          "blankPosition": 2,
+          "errorPosition": 1,
+          "reverse": false,
+          "caseSensitive": false
+        }
+      ]
+    },
+    "description": "Reorder rows"
+  },
+  {
+    "op": "core/blank-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "OpenRefineRecID",
+    "description": "Blank down cells in column OpenRefineRecID"
+  }
+]

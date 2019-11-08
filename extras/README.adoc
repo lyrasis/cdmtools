@@ -1,0 +1,3 @@
+Additional tools, info, etc. for working with the direct results of `cdmtools`.
+
+`shape_fieldvalues.json`:: Copy/pasteable OpenRefine operation history to turn the `_fieldvalues.csv` from `cdmtools` into workable OpenRefine records. 
