@@ -143,6 +143,13 @@ module Cdmtools
     def process_field_values
       colls = Cdmtools::CollDataParser.new.colls
       colls.each{ |coll| coll.process_field_values }
+      
+      File.open("#{Cdmtools::WRKDIR}/_fieldvalues.csv", 'w'){ |f|
+        f.write "coll,field,fieldvalue,recordid\n"
+        colls.each{ |coll|
+          File.open("#{coll.colldir}/_fieldvalues.csv", 'r').each{ |ln| f.write ln }
+        }
+      }
     end
 
   end

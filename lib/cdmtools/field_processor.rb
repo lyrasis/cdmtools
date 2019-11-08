@@ -29,7 +29,7 @@ module Cdmtools
       }
     end
 
-    def write_data_human(array, filename)
+    def write_csv(array, filename)
       CSV.open("#{@coll.colldir}/#{filename}", 'w'){ |csv|
         array.each { |row| csv << row }
       }
@@ -45,7 +45,7 @@ module Cdmtools
       build_fieldtype_hash
       #      report_fieldtype_hash
 #      puts "See #{@coll.colldir}/_fieldtypes.pretty.json for details on field types."
-#      write_data_human(@typehash, '_fieldtypes.pretty.json')
+#      write_csv(@typehash, '_fieldtypes.pretty.json')
     end
     
     def build_fieldtype_hash
@@ -83,7 +83,7 @@ module Cdmtools
       build_fieldvalue_hash
       report_fieldvalue_hash
       puts "See #{@coll.colldir}/_fieldvalues.pretty.json for details on field values."
-      write_data_human(make_human_writable, '_fieldvalues.csv')
+      write_csv(format_for_csv, '_fieldvalues.csv')
     end
     
     def build_fieldvalue_hash
@@ -107,12 +107,13 @@ module Cdmtools
       }
     end
 
-    def make_human_writable
+    def format_for_csv
       rows = []
-      rows << %w[coll field value occurrences pointers]
       @valuehash.keys.sort.each{ |field|
         @valuehash[field].keys.sort.each{ |field_val|
-          rows << [@coll.alias, field, field_val, @valuehash[field][field_val].length, @valuehash[field][field_val].join(';')]
+          @valuehash[field][field_val].each{ |pointer|
+            rows << [@coll.alias, field, field_val, "#{@coll.alias}/#{pointer}"]
+          }
         }
       }
       rows
