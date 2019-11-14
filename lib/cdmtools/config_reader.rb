@@ -4,6 +4,7 @@ module Cdmtools
   class ConfigReader
     attr_reader :wrk_dir
     attr_reader :api_base
+    attr_reader :util_base
     attr_reader :cdminspect
     attr_reader :logfile
     attr_reader :sleeptime
@@ -16,6 +17,7 @@ module Cdmtools
       config = YAML.load_file('config/config.yaml')
       @wrk_dir = config['wrk_dir']
       @api_base = config['cdm_ws_url']
+      @util_base = config['utils_url']
       @cdminspect = config['cdminspectpath']
       @logfile = config['logfile']
       @sleeptime = config['sleeptime']

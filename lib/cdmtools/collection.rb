@@ -16,7 +16,11 @@ module Cdmtools
     # initialized with hash of collection data from API output
     def initialize(h)
       @alias = h['alias']
-      @name = h['name']
+      if h.has_key?('name')
+        @name = h['name']
+      else
+        @name = h['alias']
+      end
       @colldir = "#{Cdmtools::WRKDIR}/#{@alias}"
       @pointerfile = "#{@colldir}/_pointers.txt"
       make_directories
@@ -82,6 +86,30 @@ module Cdmtools
       end
     end
 
+    def get_thumbnails
+      self.get_pointers
+      tndir = "#{colldir}/thumbnails"
+      Dir::mkdir(tndir) unless Dir::exist?(tndir)
+      to_get = []
+      File.readlines(@pointerfile).each{ |pointer| to_get << pointer.chomp }
+      already_have = Dir.new(tndir).children
+      already_have.map!{ |e| File.basename(e, ".*") } unless already_have.empty?
+      to_really_get = to_get - already_have
+
+      progress = ProgressBar.create(:title => "Getting thumbnails for #{@alias}...", :starting_at => 0, :total => to_really_get.length, :format => '%a %E %B %c %C %p%% %t')
+      to_really_get.each{ |pointer|
+        url = URI("#{Cdmtools::CONFIG.util_base}/getthumbnail/collection/#{@alias}/id/#{pointer}")
+        response = Net::HTTP.get_response(url)
+        if response.is_a?(Net::HTTPSuccess)
+          File.open("#{tndir}/#{pointer}.jpg", 'wb'){ |f| f.write(response.body) }
+        else
+          Cdmtools::LOG.warn("Could not download thumbnail for #{@alias}/#{pointer}.:")
+        end
+        progress.increment
+      }
+      progress.finish
+    end
+    
     private
     
     def create_objs_by_category
@@ -111,6 +139,7 @@ module Cdmtools
         Dir::mkdir(dirpath) unless Dir::exist?(dirpath)
       }
     end
+
     
   end 
 end #Cdmtools

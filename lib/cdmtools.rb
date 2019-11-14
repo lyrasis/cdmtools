@@ -75,4 +75,5 @@ module Cdmtools
 
   # silly way to make Cdmtools::WRKDIR act like a global variable
   autoload :WRKDIR, 'cdmtools/wrk_dir'
+
 end

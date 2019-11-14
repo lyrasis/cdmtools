@@ -1,5 +1,5 @@
 Gemfile.lock
-**/config.yaml
+**/*.yaml
 */.bundle/
 */.yardoc
 */_yardoc/

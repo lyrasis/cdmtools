@@ -6,6 +6,9 @@ wrk_dir: /opt/migrations/clientdirectory
 # CONTENTdm web services URL base
 cdm_ws_url: https://server12345.contentdm.oclc.org/dmwebservices/index.php?q=
 
+# CONTENTdm utils URL base (for GetFile, GetThumbnail, etc)
+utils_url: https://your.digital-colls.edu/utils
+
 # cdminspect directory path -- cdminspect is available from https://github.com/mjordan/cdminspect
 cdminspectpath: /home/username/code/cdminspect
 

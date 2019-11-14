@@ -1,8 +1,18 @@
 require 'cdmtools'
 
 module Cdmtools
-  
+    
   class CommandLine < Thor
+    no_commands{
+      def prep_coll_list(coll_input)
+        if coll_input.empty?
+          return []
+        else
+          return coll_input.split(',')
+        end
+      end
+    }
+    
     map %w[--version -v] => :__version
     desc '--version, -v', 'print the version'
     def __version
@@ -150,6 +160,22 @@ module Cdmtools
           File.open("#{coll.colldir}/_fieldvalues.csv", 'r').each{ |ln| f.write ln }
         }
       }
+    end
+
+    desc 'get_thumbnails', 'downloads thumbnails for specified collection(s) or all collections'
+    long_desc <<-LONGDESC
+    `exe/cdm get_thumbnails --coll abc` will download thumbnails for the collection with alias `abc`
+
+    `exe/cdm get_thumbnails --coll abc,def,etc` will download thumbnails for the collections with aliases `abc`, `def`, and `etc`
+
+    `exe/cdm get_thumbnails` will download thumbnails for all collections
+
+    For each collection processed, a `thumbnails` directory with be created in the collection_directory. Thumbnails are saved with the CDM object/page pointer as the filename.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def get_thumbnails
+      colls = Cdmtools::CollDataParser.new(prep_coll_list(options[:coll])).colls
+      colls.each{ |coll| coll.get_thumbnails }
     end
 
   end
