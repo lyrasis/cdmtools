@@ -24,6 +24,8 @@ module Cdmtools
   # uses api call
   autoload :CollDataGetter, 'cdmtools/coll_data_getter'
 
+  # if initialized without any coll aliases, produces array of all colls
+  # if initialized with coll aliases, produces array of just those colls
   # uses local .json if present, otherwise calls API
   # to get array of colls, do: Cdmtools::CollDataParser.new.aliases
   autoload :CollDataParser, 'cdmtools/coll_data_parser'
@@ -64,9 +66,6 @@ module Cdmtools
   # given collection object and pointer, calls dmGetCompoundObjectInfo
   # if object is compound, will write the compound object info to JSON file
   autoload :ObjectInfoGetter, 'cdmtools/object_info_getter'
-  
-  # given collection object cleans all migration records for that collection
-  autoload :RecordCleaner, 'cdmtools/record_cleaner'
   
   # given collection object and pointer, calls dmGetItemInfo, writes record to JSON
   autoload :RecordGetter, 'cdmtools/record_getter'

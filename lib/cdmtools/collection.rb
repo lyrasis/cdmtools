@@ -7,6 +7,7 @@ module Cdmtools
     attr_reader :colldir #collection directory
     attr_reader :cdmrecdir #directory for CDM records for individual objects
     attr_reader :migrecdir #directory for object records modified with migration-specific data
+    attr_reader :cleanrecdir #directory for transformed/cleaned migration records
     attr_reader :cdmobjectinfodir #directory for CDM compound object info
     attr_reader :pointerfile #path to file where pointer list will be written
     attr_reader :objs_by_category #hash of pointers organized under keys 'compound', 'compound pdf', and 'simple'
@@ -26,6 +27,11 @@ module Cdmtools
       make_directories
     end
 
+    def clean_records
+      set_migrecs
+      RecordCleaner.new(self)
+    end
+    
     def get_pointers
       Cdmtools::CollPointerGetter.new(self)
     end
@@ -40,14 +46,13 @@ module Cdmtools
       end
     end
     
-    def finalize_records
+    def finalize_migration_records
       set_migrecs
       if @migrecs.length == 0
         Cdmtools::LOG.error("No parent records in #{@migrecdir}. Cannot get finalize records")
         return
       else
         FileTypeSetter.new(self)
-        RecordCleaner.new(self)
       end
     end
     
@@ -82,8 +87,12 @@ module Cdmtools
         return
       else
         Cdmtools::FieldTypeProcessor.new(self)
-        Cdmtools::FieldValueProcessor.new(self)
+
       end
+    end
+
+    def report_fieldvalues(rectype)
+      Cdmtools::FieldValueProcessor.new(self, rectype)
     end
 
     def get_thumbnails
@@ -133,9 +142,10 @@ module Cdmtools
     def make_directories
       @cdmrecdir = "#{@colldir}/_cdmrecords"
       @cdmobjectinfodir = "#{@colldir}/_cdmobjectinfo"
+      @cleanrecdir = "#{@colldir}/_cleanrecords"
       @migrecdir = "#{@colldir}/_migrecords"
       
-      [@cdmrecdir, @cdmobjectinfodir, @migrecdir].each{ |dirpath|
+      [@cdmrecdir, @cdmobjectinfodir, @cleanrecdir, @migrecdir].each{ |dirpath|
         Dir::mkdir(dirpath) unless Dir::exist?(dirpath)
       }
     end

@@ -4,12 +4,15 @@ module Cdmtools
     
   class CommandLine < Thor
     no_commands{
-      def prep_coll_list(coll_input)
-        if coll_input.empty?
-          return []
+      def get_colls
+        if options[:coll].empty?
+          # initializing CollDataParser with empty array will return all colls
+          coll_list = []
         else
-          return coll_input.split(',')
+          # or just work on the colls specified
+          coll_list = options[:coll].split(',')
         end
+        return Cdmtools::CollDataParser.new(coll_list).colls
       end
     }
     
@@ -72,8 +75,9 @@ module Cdmtools
 
     Finally, the cdminspect header line is removed from each resulting file. 
     LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
     def get_pointers
-      colls = Cdmtools::CollDataParser.new.colls
+      colls = get_colls
       colls.each{ |coll| coll.get_pointers }
     end
 
@@ -97,8 +101,9 @@ module Cdmtools
 
     - migchilddata (hash of child data for later merging into child records)
     LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
     def get_top_records
-      colls = Cdmtools::CollDataParser.new.colls
+      colls = get_colls
       colls.each{ |coll| coll.get_top_records }
     end
 
@@ -120,28 +125,20 @@ module Cdmtools
 
     - migfile (pagefile value from the parent object dmGetCompoundObjectInfo call, in case it is missing from child record
     LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
     def get_child_records
-      colls = Cdmtools::CollDataParser.new.colls
+      colls = get_colls
       colls.each{ |coll| coll.get_child_records }
     end
 
-    desc 'finalize_records', 'set `migfiletype` field and changes `{}` values to `\'\'` values in `_migrecords` directory for all records in all collections'
+        desc 'finalize_migration_records', 'set `migfiletype` field and changes `{}` values to `\'\'` values in `_migrecords` directory for all records in all collections'
     long_desc <<-LONGDESC
-    `exe/cdm finalize_records` runs per collection. It looks at each metadata record in the collection's `_migrecords` directory. It adds a `migfiletype` field consisting of the file suffix of the file given in the `find` field.
-
-    It also:
-
-      - removes empty fields
-
-      - removes leading/trailing space from string fields
-
-      - replaces `\n` with space
-
-      - replaces multiple consecutive spaces with one space
+    `exe/cdm finalize_migration_records` runs per collection. It looks at each metadata record in the collection's `_migrecords` directory. It adds a `migfiletype` field consisting of the file suffix of the file given in the `find` field.
     LONGDESC
-    def finalize_records
-      colls = Cdmtools::CollDataParser.new.colls
-      colls.each{ |coll| coll.finalize_records }
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def finalize_migration_records
+      colls = get_colls
+      colls.each{ |coll| coll.finalize_migration_records }
     end
 
     desc 'process_field_values', 'populates a field value hash for each collection, which can be used in further analysis'
@@ -150,8 +147,9 @@ module Cdmtools
 
      { fieldname => { unique_field_value => [array of pointers having this value] } }
     LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
     def process_field_values
-      colls = Cdmtools::CollDataParser.new.colls
+      colls = get_colls
       colls.each{ |coll| coll.process_field_values }
       
       File.open("#{Cdmtools::WRKDIR}/_fieldvalues.csv", 'w'){ |f|
@@ -160,6 +158,31 @@ module Cdmtools
           File.open("#{coll.colldir}/_fieldvalues.csv", 'r').each{ |ln| f.write ln }
         }
       }
+    end
+
+    desc 'report_fieldvalues', 'populates a field value hash for each collection, which can be used in further analysis'
+    long_desc <<-LONGDESC
+    `exe/cdm report_fieldvalues` runs per collection. In each collection_directory, it creates a file called `_values.json`. This file is a hash with the following structure:
+
+     { fieldname => { unique_field_value => [array of pointers having this value] } }
+    LONGDESC
+    option :coll, :desc => 'Comma-separated list of collection aliases to include in processing', :default => ''
+    option :type, :desc => 'Record type to report on. Enter one of the following: orig, mig, or clean'
+    def report_fieldvalues
+      if %w[orig mig clean].include?(options[:type])
+        colls = get_colls
+        colls.each{ |coll| coll.report_fieldvalues(options[:type]) }
+        
+        File.open("#{Cdmtools::WRKDIR}/_fieldvalues_#{options[:type]}.csv", 'w'){ |f|
+          f.write "coll,field,fieldvalue,recordid\n"
+          colls.each{ |coll|
+            File.open("#{coll.colldir}/_fieldvalues_#{options[:type]}.csv", 'r').each{ |ln| f.write ln }
+          }
+        }
+      else
+        puts "Enter one of the following for type: orig, mig, clean"
+        exit
+      end
     end
 
     desc 'get_thumbnails', 'downloads thumbnails for specified collection(s) or all collections'
@@ -174,7 +197,7 @@ module Cdmtools
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
     def get_thumbnails
-      colls = Cdmtools::CollDataParser.new(prep_coll_list(options[:coll])).colls
+      colls = get_colls
       colls.each{ |coll| coll.get_thumbnails }
     end
 

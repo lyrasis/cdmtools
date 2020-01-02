@@ -1012,5 +1012,18 @@
     },
     "columnName": "OpenRefineRecID",
     "description": "Blank down cells in column OpenRefineRecID"
+  },
+  {
+    "op": "core/column-addition",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "baseColumnName": "fieldvalue",
+    "expression": "grel:if(contains(value, /<\\/|\\/>/), \"y\", \"n\")",
+    "onError": "set-to-blank",
+    "newColumnName": "has_html?",
+    "columnInsertIndex": 7,
+    "description": "Create column has_html? at index 7 based on column fieldvalue using expression grel:if(contains(value, /<\\/|\\/>/), \"y\", \"n\")"
   }
 ]

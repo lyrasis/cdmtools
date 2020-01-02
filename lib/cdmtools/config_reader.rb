@@ -8,7 +8,8 @@ module Cdmtools
     attr_reader :cdminspect
     attr_reader :logfile
     attr_reader :sleeptime
-    attr_reader :ignore_field_prefixes
+    attr_reader :reporting_ignore_field_prefixes
+    attr_reader :cleanup_ignore_field_prefixes
     attr_reader :mv_delimiter
     attr_reader :not_multivalued
     attr_reader :replacements
@@ -21,7 +22,8 @@ module Cdmtools
       @cdminspect = config['cdminspectpath']
       @logfile = config['logfile']
       @sleeptime = config['sleeptime']
-      @ignore_field_prefixes = config['ignore_field_prefixes']
+      @reporting_ignore_field_prefixes = config['reporting_ignore_field_prefixes']
+      @cleanup_ignore_field_prefixes = config['cleanup_ignore_field_prefixes']
       @mv_delimiter = config['mv_delimiter']
       @not_multivalued = config['not_multivalued']
       @replacements = config['replacements']

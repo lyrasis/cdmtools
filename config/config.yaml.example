@@ -28,6 +28,24 @@ ignore_field_prefixes:
   - find
   - restrictionCode
 
+# do not perform cleanup operations on field values in fields with names that begin with (or equal) any
+#   of the following
+cleanup_ignore_field_prefixes:
+  - mig
+  - dm
+  - fullrs
+  - find
+  - restrictionCode
+
+# do not perform metadata mapping on fields with names that begin with (or equal) any
+#   of the following
+mapping_ignore_field_prefixes:
+  - mig
+  - dm
+  - fullrs
+  - find
+  - restrictionCode
+
 # multivalued field delimiter
 mv_delimiter: ;
 
@@ -36,3 +54,32 @@ mv_delimiter: ;
 #  as well as extent fields recorded according to ISBD rules
 not_multivalued:
   - transc
+
+replacements:
+  - colls: ''
+    fields: ''
+    find: "’"
+    replace: "'"
+    type: plain
+  - colls: ''
+    fields:
+      - creato
+      - formaa
+      - format
+      - publia
+      - reposa
+      - reposi
+      - subjea
+    find: ";$"
+    replace: ''
+    type: regexp
+  - colls: ''
+    fields: 'formaa'
+    find: 'PDF'
+    replace: 'application/pdf'
+    type: plain
+  - colls: 'photoCollection'
+    fields: 'formaa'
+    find: 'image/tiff-jpeg'
+    replace: 'image/jp2'
+    type: plain
