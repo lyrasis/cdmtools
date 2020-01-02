@@ -67,8 +67,15 @@ Currently, it produces a .csv file per collection with one row for every field i
 
 Finally, it concatenates all the individual collection files together into one _fieldvalues.csv file in the main working directory.
 
-I'm finding it useful to convert the big file into a sqlite database using https://github.com/simonw/csvs-to-sqlite[csvs-to-sqlite], and then do faceted browsing of the database with https://datasette.readthedocs.io/en/stable/[Datasette].
+- Use https://github.com/lyrasis/mdmm[MDMM] to handle data cleanup and remapping.
 
+- harvest_objects
+
+Check logfile for errors/warnings after this step.
+
+Simple objects: harvested file size is compared against cdmfilesize and warning is logged if the values do not match
+
+Document-PDF objects: the single PDF is harvested. We don't have that filesize in the CDM record, so best practice will be to validate these objects outside this process
 
 
 == Contributing
