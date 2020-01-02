@@ -9,6 +9,7 @@ module Cdmtools
     attr_reader :migrecdir #directory for object records modified with migration-specific data
     attr_reader :cleanrecdir #directory for transformed/cleaned migration records
     attr_reader :cdmobjectinfodir #directory for CDM compound object info
+    attr_reader :objdir #directory for object files
     attr_reader :pointerfile #path to file where pointer list will be written
     attr_reader :objs_by_category #hash of pointers organized under keys 'compound', 'compound pdf', and 'simple'
     attr_reader :simpleobjs #list of pointers to simple objects in the collection
@@ -118,6 +119,13 @@ module Cdmtools
       }
       progress.finish
     end
+
+    def harvest_objects(type)
+      create_objs_by_category
+#      puts @alias
+#      pp(@objs_by_category['compound']['pdf'])
+      Cdmtools::ObjectHarvestHandler.new(self, type)
+    end
     
     private
     
@@ -144,8 +152,9 @@ module Cdmtools
       @cdmobjectinfodir = "#{@colldir}/_cdmobjectinfo"
       @cleanrecdir = "#{@colldir}/_cleanrecords"
       @migrecdir = "#{@colldir}/_migrecords"
+      @objdir = "#{@colldir}/_objects"
       
-      [@cdmrecdir, @cdmobjectinfodir, @cleanrecdir, @migrecdir].each{ |dirpath|
+      [@cdmrecdir, @cdmobjectinfodir, @cleanrecdir, @migrecdir, @objdir].each{ |dirpath|
         Dir::mkdir(dirpath) unless Dir::exist?(dirpath)
       }
     end

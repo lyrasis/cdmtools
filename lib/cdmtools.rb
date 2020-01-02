@@ -66,6 +66,8 @@ module Cdmtools
   # given collection object and pointer, calls dmGetCompoundObjectInfo
   # if object is compound, will write the compound object info to JSON file
   autoload :ObjectInfoGetter, 'cdmtools/object_info_getter'
+
+  autoload :ObjectHarvestHandler, 'cdmtools/object_harvest_handler'
   
   # given collection object and pointer, calls dmGetItemInfo, writes record to JSON
   autoload :RecordGetter, 'cdmtools/record_getter'

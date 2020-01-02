@@ -201,5 +201,18 @@ module Cdmtools
       colls.each{ |coll| coll.get_thumbnails }
     end
 
+    desc 'harvest_objects', 'downloads objects from CDM'
+    long_desc <<-LONGDESC
+    `exe/cdm harvest_objects` will download all objects for all collections
+
+    For each collection processed, an `_objects` directory is created in the collection_directory. Objects are saved with the CDM object/page pointer/record_id as the filename.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    option :type, :desc => 'type of objects to download: simple, pdfdoc, postcard, document', :default => ''
+    def harvest_objects
+      colls = get_colls
+      colls.each{ |coll| coll.harvest_objects(options[:type]) }
+    end
+    
   end
 end
