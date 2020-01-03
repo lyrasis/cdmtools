@@ -133,7 +133,11 @@ module Cdmtools
 
         desc 'finalize_migration_records', 'set `migfiletype` field and changes `{}` values to `\'\'` values in `_migrecords` directory for all records in all collections'
     long_desc <<-LONGDESC
-    `exe/cdm finalize_migration_records` runs per collection. It looks at each metadata record in the collection's `_migrecords` directory. It adds a `migfiletype` field consisting of the file suffix of the file given in the `find` field.
+    `exe/cdm finalize_migration_records` runs per collection. It looks at each metadata record in the collection's `_migrecords` directory.
+
+    It adds a `migfiletype` field consisting of the file suffix of the file given in the `find` field.
+
+    If the `migfiletype` field value = 'url', then the `migobjcategory` value is changed to 'external media'
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
     def finalize_migration_records
@@ -208,11 +212,49 @@ module Cdmtools
     For each collection processed, an `_objects` directory is created in the collection_directory. Objects are saved with the CDM object/page pointer/record_id as the filename.
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
-    option :type, :desc => 'type of objects to download: simple, pdfdoc, postcard, document', :default => ''
     def harvest_objects
       colls = get_colls
-      colls.each{ |coll| coll.harvest_objects(options[:type]) }
+      colls.each{ |coll| coll.harvest_objects }
     end
-    
+
+    desc 'report_object_stats', 'prints to screen the number of number and type of objects in each collection'
+    long_desc <<-LONGDESC
+    `exe/cdm report_object_stats` displays number and type of objects in each collection.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_object_stats
+      colls = get_colls
+      colls.each{ |coll| coll.report_object_stats }
+    end
+
+    desc 'print_object_hash', 'prints to screen the object hash -- for debugging'
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def print_object_hash
+      colls = get_colls
+      colls.each{ |coll| coll.print_object_hash }
+    end
+
+    desc 'report_object_counts', 'prints to screen the number of objects harvested for each collection'
+    long_desc <<-LONGDESC
+    `exe/cdm report_object_counts` displays count of object files you've harvested for each collection.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_object_counts
+      colls = get_colls
+      colls.each{ |coll| coll.report_object_counts }
+    end
+
+    desc 'report_object_filesize_mismatches', 'prints to screen the collection alias/pointers for harvested objects with filesize mismatches'
+    long_desc <<-LONGDESC
+    `exe/cdm report_object_filesize_mismatches` works for simple objects because the cdmfilesize field in the record generally matches the actual harvested filesize. 
+
+    It does not work for Document-PDF files because the cdmfilesize field doesn't reflect the size of the printable PDF object we download.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_object_filesize_mismatches
+      colls = get_colls
+      colls.each{ |coll| coll.report_object_filesize_mismatches }
+    end
+
   end
 end

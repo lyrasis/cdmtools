@@ -120,28 +120,136 @@ module Cdmtools
       progress.finish
     end
 
-    def harvest_objects(type)
+    def harvest_objects
       create_objs_by_category
-#      puts @alias
-#      pp(@objs_by_category['compound']['pdf'])
-      Cdmtools::ObjectHarvestHandler.new(self, type)
+      Cdmtools::ObjectHarvestHandler.new(self)
+    end
+
+    def report_object_counts
+      ct = Dir.new(@objdir).children.length
+      puts "#{ct} -- #{@alias}"
+    end
+
+    def print_object_hash
+      create_objs_by_category
+      puts "\n\n#{@alias} - #{@name}"
+      pp(@objs_by_category)
     end
     
+    def report_object_stats
+      create_objs_by_category
+      puts "\n\n#{@alias} - #{@name}"
+      puts "SIMPLE OBJECTS"
+      @objs_by_category.each{ |k, v|
+        unless k == 'compound' || k == 'children'
+          puts "  #{k}: #{v.length}" unless v.empty?
+        end
+      }
+      all_cpd = []
+      @objs_by_category['compound'].each{ |k, v|
+        all_cpd << v
+      }
+      all_cpd.flatten!
+      
+      puts "COMPOUND OBJECTS" unless all_cpd.empty?
+      
+      @objs_by_category['compound'].each{ |k, v|
+        unless v.empty?
+          puts "  #{k}: #{v.length}"
+          puts "    CHILD OBJECTS"
+          @objs_by_category['children'][k].each{ |ft, ptrs|
+            puts "      #{ft}: #{ptrs.length}"
+          }
+        end
+      }
+    end
+    
+    def report_object_filesize_mismatches
+      create_objs_by_category
+      @objs_by_category['simple'].each{ |ptr|
+        rec = JSON.parse(File.read("#{migrecdir}/#{ptr}.json"))
+        fileext = rec['migfiletype']
+        filesize = rec['cdmfilesize'].to_i
+        obj = "#{@objdir}/#{ptr}.#{fileext}"
+        objsize = File.size(obj)
+        puts "#{@alias}/#{ptr}.#{fileext} -- in rec: #{filesize} -- on disk: #{objsize}" if filesize != objsize
+      }
+    end
+
     private
     
     def create_objs_by_category
-      @objs_by_category = { 'simple' => [], 'compound' => { 'pdf' => [], 'other' => [] } }
+      @objs_by_category = {
+        'external media' => [],
+        'pdf' => [],
+        'compound' => {
+          'document-PDF' => [],
+          'document' => [],
+          'postcard' => [],
+          'other' => []
+        },
+        'children' => {
+          'document-PDF' => {},
+          'document' => {},
+          'postcard' => {},
+          'other' => {}
+        }
+      }
       Dir.new(@migrecdir).children.each{ |recname|
         rec = JSON.parse(File.read("#{@migrecdir}/#{recname}"))
         pointer = rec['dmrecord']
-        case rec['migobjcategory']
-        when 'simple'
-          @objs_by_category['simple'] << pointer
-        when 'compound'
-          if rec['migcompobjtype'] == 'Document-PDF'
-            @objs_by_category['compound']['pdf'] << pointer
+        filetype = rec['migfiletype']
+
+        case rec['migobjlevel']
+        when 'top'
+          case rec['migobjcategory']
+            when 'simple'
+              if @objs_by_category.has_key?(filetype)
+                @objs_by_category[filetype] << pointer
+              else
+                @objs_by_category[filetype] = [pointer]
+              end
+            when 'external media'
+              @objs_by_category['external media'] << pointer
+            when 'compound'
+              case rec['migcompobjtype']
+              when 'Document-PDF'
+                  @objs_by_category['pdf'] << pointer if rec['cdmprintpdf'] == '1'
+                  @objs_by_category['compound']['document-PDF'] << pointer if rec['cdmprintpdf'] == '0'
+              when 'Document'
+                @objs_by_category['compound']['document'] << pointer
+              when 'Postcard'
+                @objs_by_category['compound']['postcard'] << pointer
+              else
+                @objs_by_category['compound']['other'] << pointer
+              end
+            end
+        when 'child'
+          case rec['migobjcategory']
+          when 'Document-PDF'
+            if @objs_by_category['children']['document-PDF'].has_key?(filetype) 
+              @objs_by_category['children']['document-PDF'][filetype] << pointer
+            else
+              @objs_by_category['children']['document-PDF'][filetype] = [pointer]
+            end
+          when 'Document'
+            if @objs_by_category['children']['document'].has_key?(filetype) 
+              @objs_by_category['children']['document'][filetype] << pointer
+            else
+              @objs_by_category['children']['document'][filetype] = [pointer]
+            end
+          when 'Postcard'
+            if @objs_by_category['children']['postcard'].has_key?(filetype) 
+              @objs_by_category['children']['postcard'][filetype] << pointer
+            else
+              @objs_by_category['children']['postcard'][filetype] = [pointer]
+            end
           else
-            @objs_by_category['compound']['other'] << pointer
+            if @objs_by_category['children']['other'].has_key?(filetype) 
+              @objs_by_category['children']['other'][filetype] << pointer
+            else
+              @objs_by_category['children']['other'][filetype] = [pointer]
+            end
           end
         end
       }

@@ -14,15 +14,19 @@ module Cdmtools
           if rec_find
             filetype = rec_find.sub(/.*?\./, '')
             rec['migfiletype'] = filetype
-
-            File.open(filename, 'w'){ |f|
-              f.write(rec.to_json)
-            }
           else
             Cdmtools::LOG.error("Cannot determine file type for #{filename}")
             next
           end
         end
+
+        if rec['migfiletype'] && rec['migfiletype'] == 'url'
+          rec['migobjcategory'] = 'external media'
+        end
+
+        File.open(filename, 'w'){ |f|
+          f.write(rec.to_json)
+        }
       }
     end
 
