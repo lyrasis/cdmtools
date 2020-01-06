@@ -4,15 +4,14 @@ module Cdmtools
   class CdmFieldGetter
     attr_reader :fielddata # hash of field data. key = collalias, val = json for dmGetCollectionFieldInfo
 
-    def initialize()
+    def initialize(colls)
       @fielddata = {}
-      colls = Cdmtools::CollDataParser.new
-      colls.colls.each{ |coll| get_coll_fields(coll.alias, Cdmtools::CONFIG.api_base) }
+      colls.each{ |coll| get_coll_fields(coll.alias, Cdmtools::CONFIG.api_base) }
       if @fielddata.length == 0
         Cdmtools::LOG.warn("No field data was retrieved. Will not write any files.")
       else
         write_json
-        write_csv(colls.aliases.first)
+        write_csv(colls.first.alias)
       end
     end
 

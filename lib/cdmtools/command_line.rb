@@ -63,8 +63,10 @@ module Cdmtools
 
     This command requires the `colls.json` file created by `get_coll_data`, and will re-run that command if the file is not found.
     LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
     def get_field_data
-      Cdmtools::CdmFieldGetter.new  
+      colls = get_colls
+      Cdmtools::CdmFieldGetter.new(colls)
     end
 
     desc 'get_pointers', 'get CDM pointer lists for each collection'
