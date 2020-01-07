@@ -59,12 +59,20 @@ module Cdmtools
     
     def get_top_records
       self.get_pointers
+      size = File.readlines(@pointerfile).size
+      pb = ProgressBar.create(:title => "Downloading #{size} records for #{@alias}",
+                              :starting_at => 0,
+                              :total => size,
+                              :format => '%t : |%b>>%i| %p%% %a')
+
       File.readlines(@pointerfile).each{ |pointer|
         pointer = pointer.chomp
         RecordGetter.new(self, pointer)
         ObjectInfoGetter.new(self, pointer)
         CompoundObjInfoMerger.new(self, pointer)
+        pb.increment
       }
+      pb.finish
     end
 
     def get_child_records
