@@ -34,6 +34,30 @@ For details on exactly what each command does:
 
 === Conceptual outline
 
+CDM has collections.
+
+Collections contain objects.
+
+Objects are simple or compound.
+
+Simple objects will have metadata record plus one associated object file.
+
+Compound objects have child objects. The top-level compound object will have a metadata record. Child objects each have a metadata record (usually sparser than the parent record) and one associated object file.
+
+:NOTE:
+----
+Document-PDF is treated as a compound object in CDM, but if `cdmprintpdf`=1 in the parent record, we treat this as a simple object, with the print pdf file as the object file.
+----
+
+`_cdmobjectinfo` contains the original CDM JSON object info downloaded for each compound object.
+
+`_cdmrecords` contains the original CDM JSON metadata downloaded for each object (top level and child mixed together).
+
+`_migrecords` contains the "migration records", or migrecords,  generated for each item. Migrecords are the original record, augmented with information in new fields added to support the processing and migration of the data. Do `exe/cdm help get_top_records` to see the details on how migrecords are generated.
+
+`_objects` contains the object files downloaded for each collection.
+
+https://github.com/lyrasis/mdmm[MDMM] expects collection directories containing `_migrecords` and `_objects` directories.
 
 
 === Recommended initial order of commands for working with a new CDM instance
