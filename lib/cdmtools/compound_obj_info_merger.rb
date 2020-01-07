@@ -71,11 +71,11 @@ module Cdmtools
       end
     end
 
-    # returns array of child data hashes as found in CDM data
-    # accounts for the different structures CDM uses to represent children
-    # simplifies and just returns a flat list of the child object hashes in order
+    # Returns array of child data hashes as found in CDM data.
+    # Accounts for the different structures CDM uses to represent children.
+    # Simplifies the structure and just returns a flat list of the child object hashes in order
     def get_child_data
-      if ['Postcard', 'Document'].include?(@cotype)
+      if ['Postcard', 'Document', 'Picture Cube'].include?(@cotype)
         if @objinfo['page'].is_a?(Hash)
           pages = process_node_hash(@objinfo, [])
           return pages
@@ -87,7 +87,7 @@ module Cdmtools
         return pages
       elsif @cotype == 'Document-PDF'
         if @cdmrec['cdmprintpdf'] == '1'
-          Cdmtools::LOG.info("Not retrieving child data for #{@cotype} #{@coll.alias}/#{@pointer}")
+          Cdmtools::LOG.debug("Not retrieving child data for #{@cotype} #{@coll.alias}/#{@pointer}")
         else
           Cdmtools::LOG.warn("#{@cotype} #{@coll.alias}/#{@pointer} not marked as cdmprintpdf. Check it out.")
         end
@@ -126,7 +126,7 @@ module Cdmtools
       File.open(@migrecpath, 'w'){ |f|
         f.write(@cdmrec.to_json)
       }
-      Cdmtools::LOG.info("Wrote altered migration record to: #{@migrecpath}")
+      Cdmtools::LOG.debug("Wrote altered migration record to: #{@migrecpath}")
     end
 
   end #CollDataGetter class

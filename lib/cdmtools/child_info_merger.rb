@@ -57,7 +57,7 @@ module Cdmtools
       File.open(@migrecpath, 'w'){ |f|
         f.write(@cdmrec.to_json)
       }
-      Cdmtools::LOG.info("Wrote altered migration record to: #{@migrecpath}")
+      Cdmtools::LOG.debug("Wrote altered migration record to: #{@migrecpath}")
     end
 
   end #CollDataGetter class

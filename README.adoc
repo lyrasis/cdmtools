@@ -30,9 +30,15 @@ For details on exactly what each command does:
 
 `exe/cdm help [COMMAND]`
 
-This command currently is the best documentation for each step. Later, I will add some more info to https://github.com/lyrasis/cdmtools/wiki[the repo wiki].
+*This command currently is the best documentation for each step.* Later, I will add some more info to https://github.com/lyrasis/cdmtools/wiki[the repo wiki].
+
+=== Conceptual outline
+
+
 
 === Recommended initial order of commands for working with a new CDM instance
+
+==== Data/metadata profiling
 
 - get_coll_data
 - get_dc_mappings
@@ -48,28 +54,28 @@ The tool creates a local JSON file for each successful API call, and tries to be
 
 This means you can just re-run the above command to try to re-grab any records that could not be retrieved before. It will work fast and only grab what is missing. It also currently means that, if you want to refresh the records from the source, you will need to delete the local copies in `collalias/_cdmrecords`
 
-(I'd like to eventually add an "force refresh of data" flag, and also allow you to specify this function should run only on the collection alias(es) you enter)
+Use `--force=true` to re-download records and compoundobject info you already retrieved.
 
 - get_child_records
 
+Use `--force=true` to re-download records you already retrieved.
+
 Again, check your logfile after this step
 
-- (TODO) compile_object_inventory
+- finalize_migration_records
 
-The above function still needs to be added. Coming soon!
+*Now you can use https://github.com/lyrasis/mdmm[MDMM] to handle data reporting, cleanup, and remapping.*
 
-- finalize_records
-- process_field_values
+==== Object data
+- harvest_objects
 
-The latter function is kind of amorphous right now and will probably be broken up into other functions as I get clearer on what makes the most sense here. 
+Check logfile for errors/warnings after this step.
 
-Currently, it produces a .csv file per collection with one row for every field in every record. Data in each row: collection, field, field value (literal -- not split on delimiters like cdminspect will do), record id (`collection/pointer`).
+Simple objects: harvested file size is compared against cdmfilesize and warning is logged if the values do not match
 
-Finally, it concatenates all the individual collection files together into one _fieldvalues.csv file in the main working directory.
+Document-PDF objects: the single PDF is harvested. We don't have that filesize in the CDM record, so best practice will be to validate these objects outside this process
 
-I'm finding it useful to convert the big file into a sqlite database using https://github.com/simonw/csvs-to-sqlite[csvs-to-sqlite], and then do faceted browsing of the database with https://datasette.readthedocs.io/en/stable/[Datasette].
-
-
+*Use `exe/cdm help` and `exe/cdm help [COMMAND]` to get more details on helper functions for harvesting and working with objects*
 
 == Contributing
 

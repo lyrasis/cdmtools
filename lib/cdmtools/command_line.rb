@@ -63,8 +63,10 @@ module Cdmtools
 
     This command requires the `colls.json` file created by `get_coll_data`, and will re-run that command if the file is not found.
     LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
     def get_field_data
-      Cdmtools::CdmFieldGetter.new  
+      colls = get_colls
+      Cdmtools::CdmFieldGetter.new(colls)
     end
 
     desc 'get_pointers', 'get CDM pointer lists for each collection'
@@ -102,9 +104,10 @@ module Cdmtools
     - migchilddata (hash of child data for later merging into child records)
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    option :force, :desc => 'boolean (true, false) - whether to force refresh of data', :default => 'false'
     def get_top_records
       colls = get_colls
-      colls.each{ |coll| coll.get_top_records }
+      colls.each{ |coll| coll.get_top_records(options[:force]) }
     end
 
     desc 'get_child_records', 'get and process CDM records for child objects in collections'
@@ -126,63 +129,24 @@ module Cdmtools
     - migfile (pagefile value from the parent object dmGetCompoundObjectInfo call, in case it is missing from child record
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    option :force, :desc => 'boolean (true, false) - whether to force refresh of data', :default => 'false'
     def get_child_records
       colls = get_colls
-      colls.each{ |coll| coll.get_child_records }
+      colls.each{ |coll| coll.get_child_records(options[:force]) }
     end
 
         desc 'finalize_migration_records', 'set `migfiletype` field and changes `{}` values to `\'\'` values in `_migrecords` directory for all records in all collections'
     long_desc <<-LONGDESC
-    `exe/cdm finalize_migration_records` runs per collection. It looks at each metadata record in the collection's `_migrecords` directory. It adds a `migfiletype` field consisting of the file suffix of the file given in the `find` field.
+    `exe/cdm finalize_migration_records` runs per collection. It looks at each metadata record in the collection's `_migrecords` directory.
+
+    It adds a `migfiletype` field consisting of the file suffix of the file given in the `find` field.
+
+    If the `migfiletype` field value = 'url', then the `migobjcategory` value is changed to 'external media'
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
     def finalize_migration_records
       colls = get_colls
       colls.each{ |coll| coll.finalize_migration_records }
-    end
-
-    desc 'process_field_values', 'populates a field value hash for each collection, which can be used in further analysis'
-    long_desc <<-LONGDESC
-    `exe/cdm process_field_values` runs per collection. In each collection_directory, it creates a file called `_values.json`. This file is a hash with the following structure:
-
-     { fieldname => { unique_field_value => [array of pointers having this value] } }
-    LONGDESC
-    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
-    def process_field_values
-      colls = get_colls
-      colls.each{ |coll| coll.process_field_values }
-      
-      File.open("#{Cdmtools::WRKDIR}/_fieldvalues.csv", 'w'){ |f|
-        f.write "coll,field,fieldvalue,recordid\n"
-        colls.each{ |coll|
-          File.open("#{coll.colldir}/_fieldvalues.csv", 'r').each{ |ln| f.write ln }
-        }
-      }
-    end
-
-    desc 'report_fieldvalues', 'populates a field value hash for each collection, which can be used in further analysis'
-    long_desc <<-LONGDESC
-    `exe/cdm report_fieldvalues` runs per collection. In each collection_directory, it creates a file called `_values.json`. This file is a hash with the following structure:
-
-     { fieldname => { unique_field_value => [array of pointers having this value] } }
-    LONGDESC
-    option :coll, :desc => 'Comma-separated list of collection aliases to include in processing', :default => ''
-    option :type, :desc => 'Record type to report on. Enter one of the following: orig, mig, or clean'
-    def report_fieldvalues
-      if %w[orig mig clean].include?(options[:type])
-        colls = get_colls
-        colls.each{ |coll| coll.report_fieldvalues(options[:type]) }
-        
-        File.open("#{Cdmtools::WRKDIR}/_fieldvalues_#{options[:type]}.csv", 'w'){ |f|
-          f.write "coll,field,fieldvalue,recordid\n"
-          colls.each{ |coll|
-            File.open("#{coll.colldir}/_fieldvalues_#{options[:type]}.csv", 'r').each{ |ln| f.write ln }
-          }
-        }
-      else
-        puts "Enter one of the following for type: orig, mig, clean"
-        exit
-      end
     end
 
     desc 'get_thumbnails', 'downloads thumbnails for specified collection(s) or all collections'
@@ -199,6 +163,57 @@ module Cdmtools
     def get_thumbnails
       colls = get_colls
       colls.each{ |coll| coll.get_thumbnails }
+    end
+
+    desc 'harvest_objects', 'downloads objects from CDM'
+    long_desc <<-LONGDESC
+    `exe/cdm harvest_objects` will download all objects for all collections
+
+    For each collection processed, an `_objects` directory is created in the collection_directory. Objects are saved with the CDM object/page pointer/record_id as the filename.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def harvest_objects
+      colls = get_colls
+      colls.each{ |coll| coll.harvest_objects }
+    end
+
+    desc 'report_object_stats', 'prints to screen the number of number and type of objects in each collection'
+    long_desc <<-LONGDESC
+    `exe/cdm report_object_stats` displays number and type of objects in each collection.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_object_stats
+      colls = get_colls
+      colls.each{ |coll| coll.report_object_stats }
+    end
+
+    desc 'print_object_hash', 'prints to screen the object hash -- for debugging'
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def print_object_hash
+      colls = get_colls
+      colls.each{ |coll| coll.print_object_hash }
+    end
+
+    desc 'report_object_counts', 'prints to screen the number of object files harvested for each collection'
+    long_desc <<-LONGDESC
+    `exe/cdm report_object_counts` displays count of object files you've harvested for each collection.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_object_counts
+      colls = get_colls
+      colls.each{ |coll| coll.report_object_counts }
+    end
+
+    desc 'report_object_filesize_mismatches', 'prints to screen the collection alias/pointers for harvested objects with filesize mismatches'
+    long_desc <<-LONGDESC
+    `exe/cdm report_object_filesize_mismatches` works for simple objects because the cdmfilesize field in the record generally matches the actual harvested filesize. 
+
+    It does not work for Document-PDF files because the cdmfilesize field doesn't reflect the size of the printable PDF object we download.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_object_filesize_mismatches
+      colls = get_colls
+      colls.each{ |coll| coll.report_object_filesize_mismatches }
     end
 
   end

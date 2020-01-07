@@ -50,11 +50,6 @@ module Cdmtools
   # uses API call to grab DC field spec from CDM
   autoload :DcMappingGetter, 'cdmtools/dc_mapping_getter'
   
-  # runs across records, compiling, slicing, dicing the metadata in various ways
-  autoload :FieldProcessor, 'cdmtools/field_processor'
-  autoload :FieldTypeProcessor, 'cdmtools/field_processor'
-  autoload :FieldValueProcessor, 'cdmtools/field_processor'
-  
   # given collection object, runs through all migration records and adds `migfiletype`
   #  field to each
   autoload :FileTypeSetter, 'cdmtools/file_type_setter'
@@ -66,6 +61,8 @@ module Cdmtools
   # given collection object and pointer, calls dmGetCompoundObjectInfo
   # if object is compound, will write the compound object info to JSON file
   autoload :ObjectInfoGetter, 'cdmtools/object_info_getter'
+
+  autoload :ObjectHarvestHandler, 'cdmtools/object_harvest_handler'
   
   # given collection object and pointer, calls dmGetItemInfo, writes record to JSON
   autoload :RecordGetter, 'cdmtools/record_getter'

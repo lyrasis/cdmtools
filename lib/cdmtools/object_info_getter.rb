@@ -8,12 +8,12 @@ module Cdmtools
     attr_reader :filename
     
     # initialized with a collection object and pointer
-    def initialize(coll, pointer)
+    def initialize(coll, pointer, force)
       @coll = coll
       @pointer = pointer
       @filename = "#{@coll.cdmobjectinfodir}/#{pointer}.json"
-      if File::exist?(@filename)
-        Cdmtools::LOG.info("Object info exists at #{@filename}. Will not retrieve from API and overwrite.")
+      if File::exist?(@filename) && force == 'false'
+        Cdmtools::LOG.debug("Object info exists at #{@filename}. Will not retrieve from API and overwrite.")
       else
         @objinfo = get_object_info
         write_object_info if @objinfo
@@ -29,10 +29,10 @@ module Cdmtools
       if result.is_a?(Net::HTTPSuccess)
         oi = JSON.parse(result.body)
         if oi['message'] && oi['message']['is not compound']
-          Cdmtools::LOG.info("#{@coll.alias}/#{@pointer} is a simple object")
+          Cdmtools::LOG.debug("#{@coll.alias}/#{@pointer} is a simple object")
           return nil
         else
-          Cdmtools::LOG.info("Retrieved object info from API for #{@coll.alias}/#{@pointer}")
+          Cdmtools::LOG.debug("Retrieved object info from API for #{@coll.alias}/#{@pointer}")
           return oi
         end
       else
@@ -46,7 +46,7 @@ module Cdmtools
       File.open(@filename, 'w'){ |f|
         f.write(@objinfo.to_json)
       }
-      Cdmtools::LOG.info("Wrote object info to #{@filename}")
+      Cdmtools::LOG.debug("Wrote object info to #{@filename}")
     end
     
   end
