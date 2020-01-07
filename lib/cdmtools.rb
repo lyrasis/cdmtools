@@ -50,11 +50,6 @@ module Cdmtools
   # uses API call to grab DC field spec from CDM
   autoload :DcMappingGetter, 'cdmtools/dc_mapping_getter'
   
-  # runs across records, compiling, slicing, dicing the metadata in various ways
-  autoload :FieldProcessor, 'cdmtools/field_processor'
-  autoload :FieldTypeProcessor, 'cdmtools/field_processor'
-  autoload :FieldValueProcessor, 'cdmtools/field_processor'
-  
   # given collection object, runs through all migration records and adds `migfiletype`
   #  field to each
   autoload :FileTypeSetter, 'cdmtools/file_type_setter'

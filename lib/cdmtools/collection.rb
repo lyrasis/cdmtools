@@ -13,6 +13,7 @@ module Cdmtools
     attr_reader :pointerfile #path to file where pointer list will be written
     attr_reader :objs_by_category #hash of pointers organized under keys 'compound', 'compound pdf', and 'simple'
     attr_reader :simpleobjs #list of pointers to simple objects in the collection
+    attr_reader :compoundobjs #list of pointers to compound objects (top level) in the collection
     attr_reader :migrecs #array of migration record filenames
 
     # initialized with hash of collection data from API output
@@ -57,7 +58,7 @@ module Cdmtools
       end
     end
     
-    def get_top_records
+    def get_top_records(force)
       self.get_pointers
       size = File.readlines(@pointerfile).size
       pb = ProgressBar.create(:title => "Downloading #{size} records for #{@alias}",
@@ -67,41 +68,27 @@ module Cdmtools
 
       File.readlines(@pointerfile).each{ |pointer|
         pointer = pointer.chomp
-        RecordGetter.new(self, pointer)
-        ObjectInfoGetter.new(self, pointer)
+        RecordGetter.new(self, pointer, force)
+        ObjectInfoGetter.new(self, pointer, force)
         CompoundObjInfoMerger.new(self, pointer)
         pb.increment
       }
       pb.finish
     end
 
-    def get_child_records
+    def get_child_records(force)
       set_migrecs
       if @migrecs.length == 0
         Cdmtools::LOG.error("No parent records in #{@migrecdir}. Cannot get child records")
         return
       else
         create_objs_by_category
-        if @objs_by_category['compound']['other'].length > 0
-          ChildRecordGetter.new(self)
+        size = @compoundobjs.length
+        if  size > 0
+          ChildRecordGetter.new(self, force)
           ChildInfoMergeHandler.new(self)
         end
       end
-    end
-
-    def process_field_values
-      set_migrecs
-      if @migrecs.length == 0
-        Cdmtools::LOG.error("No parent records in #{@migrecdir}. Cannot get process field values")
-        return
-      else
-        Cdmtools::FieldTypeProcessor.new(self)
-
-      end
-    end
-
-    def report_fieldvalues(rectype)
-      Cdmtools::FieldValueProcessor.new(self, rectype)
     end
 
     def get_thumbnails
@@ -183,7 +170,7 @@ module Cdmtools
         puts "#{@alias}/#{ptr}.#{fileext} -- in rec: #{filesize} -- on disk: #{objsize}" if filesize != objsize
       }
     end
-
+    
     private
     
     def create_objs_by_category
@@ -194,12 +181,14 @@ module Cdmtools
           'document-PDF' => [],
           'document' => [],
           'postcard' => [],
+          'picture cube' => [],
           'other' => []
         },
         'children' => {
           'document-PDF' => {},
           'document' => {},
           'postcard' => {},
+          'picture cube' => {},
           'other' => {}
         }
       }
@@ -226,6 +215,8 @@ module Cdmtools
                   @objs_by_category['compound']['document-PDF'] << pointer if rec['cdmprintpdf'] == '0'
               when 'Document'
                 @objs_by_category['compound']['document'] << pointer
+              when 'Picture Cube'
+                @objs_by_category['compound']['picture cube'] << pointer
               when 'Postcard'
                 @objs_by_category['compound']['postcard'] << pointer
               else
@@ -246,6 +237,12 @@ module Cdmtools
             else
               @objs_by_category['children']['document'][filetype] = [pointer]
             end
+          when 'Picture Cube'
+            if @objs_by_category['children']['picture cube'].has_key?(filetype) 
+              @objs_by_category['children']['picture cube'][filetype] << pointer
+            else
+              @objs_by_category['children']['picture cube'][filetype] = [pointer]
+            end
           when 'Postcard'
             if @objs_by_category['children']['postcard'].has_key?(filetype) 
               @objs_by_category['children']['postcard'][filetype] << pointer
@@ -261,6 +258,26 @@ module Cdmtools
           end
         end
       }
+      set_simpleobjs
+      set_compoundobjs
+    end
+
+    def set_compoundobjs
+      pointers = []
+      @objs_by_category['compound'].each{ |category, ptrarray|
+        pointers << ptrarray
+      }
+      @compoundobjs = pointers.flatten
+    end
+
+    def set_simpleobjs
+      pointers = []
+      exclude = ['compound', 'children', 'external media']
+      
+      @objs_by_category.each{ |category, data|
+        pointers << data unless exclude.include?(category)
+      }
+      @simpleobjs = pointers.flatten
     end
     
     def make_directories

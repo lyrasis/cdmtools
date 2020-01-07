@@ -104,9 +104,10 @@ module Cdmtools
     - migchilddata (hash of child data for later merging into child records)
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    option :force, :desc => 'boolean (true, false) - whether to force refresh of data', :default => 'false'
     def get_top_records
       colls = get_colls
-      colls.each{ |coll| coll.get_top_records }
+      colls.each{ |coll| coll.get_top_records(options[:force]) }
     end
 
     desc 'get_child_records', 'get and process CDM records for child objects in collections'
@@ -128,9 +129,10 @@ module Cdmtools
     - migfile (pagefile value from the parent object dmGetCompoundObjectInfo call, in case it is missing from child record
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    option :force, :desc => 'boolean (true, false) - whether to force refresh of data', :default => 'false'
     def get_child_records
       colls = get_colls
-      colls.each{ |coll| coll.get_child_records }
+      colls.each{ |coll| coll.get_child_records(options[:force]) }
     end
 
         desc 'finalize_migration_records', 'set `migfiletype` field and changes `{}` values to `\'\'` values in `_migrecords` directory for all records in all collections'
@@ -145,50 +147,6 @@ module Cdmtools
     def finalize_migration_records
       colls = get_colls
       colls.each{ |coll| coll.finalize_migration_records }
-    end
-
-    desc 'process_field_values', 'populates a field value hash for each collection, which can be used in further analysis'
-    long_desc <<-LONGDESC
-    `exe/cdm process_field_values` runs per collection. In each collection_directory, it creates a file called `_values.json`. This file is a hash with the following structure:
-
-     { fieldname => { unique_field_value => [array of pointers having this value] } }
-    LONGDESC
-    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
-    def process_field_values
-      colls = get_colls
-      colls.each{ |coll| coll.process_field_values }
-      
-      File.open("#{Cdmtools::WRKDIR}/_fieldvalues.csv", 'w'){ |f|
-        f.write "coll,field,fieldvalue,recordid\n"
-        colls.each{ |coll|
-          File.open("#{coll.colldir}/_fieldvalues.csv", 'r').each{ |ln| f.write ln }
-        }
-      }
-    end
-
-    desc 'report_fieldvalues', 'populates a field value hash for each collection, which can be used in further analysis'
-    long_desc <<-LONGDESC
-    `exe/cdm report_fieldvalues` runs per collection. In each collection_directory, it creates a file called `_values.json`. This file is a hash with the following structure:
-
-     { fieldname => { unique_field_value => [array of pointers having this value] } }
-    LONGDESC
-    option :coll, :desc => 'Comma-separated list of collection aliases to include in processing', :default => ''
-    option :type, :desc => 'Record type to report on. Enter one of the following: orig, mig, or clean'
-    def report_fieldvalues
-      if %w[orig mig clean].include?(options[:type])
-        colls = get_colls
-        colls.each{ |coll| coll.report_fieldvalues(options[:type]) }
-        
-        File.open("#{Cdmtools::WRKDIR}/_fieldvalues_#{options[:type]}.csv", 'w'){ |f|
-          f.write "coll,field,fieldvalue,recordid\n"
-          colls.each{ |coll|
-            File.open("#{coll.colldir}/_fieldvalues_#{options[:type]}.csv", 'r').each{ |ln| f.write ln }
-          }
-        }
-      else
-        puts "Enter one of the following for type: orig, mig, clean"
-        exit
-      end
     end
 
     desc 'get_thumbnails', 'downloads thumbnails for specified collection(s) or all collections'
@@ -236,7 +194,7 @@ module Cdmtools
       colls.each{ |coll| coll.print_object_hash }
     end
 
-    desc 'report_object_counts', 'prints to screen the number of objects harvested for each collection'
+    desc 'report_object_counts', 'prints to screen the number of object files harvested for each collection'
     long_desc <<-LONGDESC
     `exe/cdm report_object_counts` displays count of object files you've harvested for each collection.
     LONGDESC
