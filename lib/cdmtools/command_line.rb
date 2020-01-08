@@ -279,5 +279,20 @@ Writes csv of problem record data (`problem_records.csv`) to CDM working directo
       colls.each{ |coll| coll.report_object_filesize_mismatches }
     end
 
+    desc 'report_cumulative_filesizes', 'prints the cumulative filesize of specified collection(s)'
+    long_desc <<-LONGDESC
+    `exe/cdm report_cumulative_filesizes` sums the cdmfilesize field from all records for non-pdf simple objects and all child objects.
+
+    It does not work for Document-PDF files because the cdmfilesize field does not reflect the size of the printable PDF object we download.
+      LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_cumulative_filesizes
+      colls = get_colls
+      sizes = []
+      colls.each{ |coll| sizes << coll.report_object_size }
+      puts "Cumulative object filesize: #{sizes.sum}"
+      puts "NOTE: does not include cdmprintpdf documents treated as simple objects"
+    end
+
   end
 end

@@ -159,7 +159,6 @@ module Cdmtools
         rec = JSON.parse(File.read(recpath))
         if rec['message']          
           pointer = recfile.delete('.json')
-#          puts "#{@alias}/#{pointer}"
           message = rec['message']
           code = rec['code'] ? rec['code'] : ''
           rc = rec['restrictionCode'] ? rec['restrictionCode'] : ''
@@ -206,19 +205,52 @@ module Cdmtools
     
     def report_object_filesize_mismatches
       create_objs_by_category
-      @objs_by_category['simple'].each{ |ptr|
-        rec = JSON.parse(File.read("#{migrecdir}/#{ptr}.json"))
+      to_check = []
+      @objs_by_category.each{ |category, data|
+        to_check << data unless ['external media', 'pdf', 'compound', 'children'].include?(category)
+      }
+      @objs_by_category['children'].each{ |category, byfiletypes|
+        byfiletypes.each{ |filetype, pointers| to_check << pointers }
+      }
+      to_check.flatten.each{ |pointer|
+        rec = get_migrec(pointer)
         fileext = rec['migfiletype']
-        filesize = rec['cdmfilesize'].to_i
-        obj = "#{@objdir}/#{ptr}.#{fileext}"
+        filesize = get_filesize(pointer)
+        obj = "#{@objdir}/#{pointer}.#{fileext}"
         objsize = File.size(obj)
-        puts "#{@alias}/#{ptr}.#{fileext} -- in rec: #{filesize} -- on disk: #{objsize}" if filesize != objsize
+        puts "#{@alias}/#{pointer}.#{fileext} -- in rec: #{filesize} -- on disk: #{objsize}" if filesize != objsize
       }
     end
     
+    def report_object_size
+      create_objs_by_category
+      size = 0
+      @simpleobjs.each{ |pointer|
+        rec = get_migrec(pointer)
+        filetype = rec['migfiletype'].downcase
+        size += get_filesize(pointer) unless filetype == 'pdf'
+      }
+      @childobjs.each{ |pointer|
+        size += get_filesize(pointer)
+      }
+      return size
+    end
+
     private
+
+    def get_migrec(pointer)
+      JSON.parse(File.read("#{@migrecdir}/#{pointer}.json"))
+    end
+
+    def get_filesize(pointer)
+      rec = get_migrec(pointer)
+      filesize = rec['cdmfilesize'] ? rec['cdmfilesize'].to_i : 0
+      filesize
+    end
     
     def create_objs_by_category
+      return unless @objs_by_category.nil?
+      
       @objs_by_category = {
         'external media' => [],
         'pdf' => [],
