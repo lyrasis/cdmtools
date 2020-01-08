@@ -135,6 +135,39 @@ module Cdmtools
       colls.each{ |coll| coll.get_child_records(options[:force]) }
     end
 
+    desc 'report_error_records', 'produce report of missing/error cdmrecords'
+    long_desc <<-LONGDESC
+    `exe/cdm report_error_records` runs per collection. It looks at each metadata record in the collection's `_cdmrecords` directory and reports back `code`, `message`, and `restrictionCode` field values if present.
+
+CDM API does not return an HTTP error status if an actual record cannot be returned, so we end up with these stub records that must be detected and handled after the fact.
+
+Writes csv of problem record data (`problem_records.csv`) to CDM working directory.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_error_records
+      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_records.csv"
+      File.delete(report_path) if File::exist?(report_path)
+      colls = get_colls
+      colls.each{ |coll| coll.report_error_records }
+    end
+
+    desc 'delete_error_records', 'delete missing/error cdmrecords and migrecs, based on problem record report'
+    long_desc <<-LONGDESC
+    `exe/cdm delete_error_records` runs on the problem_records.csv file created via the `report_error_records` command. If there is no problem_records.csv file in the working directory, it does nothing. Otherwise, it goes through that file and deletes the records listed in it. 
+    LONGDESC
+    def delete_error_records
+      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_records.csv"
+      if File::exist?(report_path)
+        CSV.read(report_path, headers: true).each{ |err|
+          colldir = "#{Cdmtools::CONFIG.wrk_dir}/#{err['collection']}"
+          cdmrec = "#{colldir}/_cdmrecords/#{err['pointer']}.json"
+          migrec = "#{colldir}/_migrecords/#{err['pointer']}.json"
+          cleanrec = "#{colldir}/_cleanrecords/#{err['pointer']}.json"
+          [cdmrec, migrec, cleanrec].each{ |rec| File.delete(rec) if File::exist?(rec) }
+        }
+      end
+    end
+
         desc 'finalize_migration_records', 'set `migfiletype` field and changes `{}` values to `\'\'` values in `_migrecords` directory for all records in all collections'
     long_desc <<-LONGDESC
     `exe/cdm finalize_migration_records` runs per collection. It looks at each metadata record in the collection's `_migrecords` directory.
@@ -194,14 +227,44 @@ module Cdmtools
       colls.each{ |coll| coll.print_object_hash }
     end
 
-    desc 'report_object_counts', 'prints to screen the number of object files harvested for each collection'
+    desc 'report_object_file_counts', 'prints to screen the number of object files harvested for each collection'
     long_desc <<-LONGDESC
-    `exe/cdm report_object_counts` displays count of object files you've harvested for each collection.
+    `exe/cdm report_object_file_counts` displays count of object files you've harvested for each collection.
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
-    def report_object_counts
+    def report_object_file_counts
       colls = get_colls
       colls.each{ |coll| coll.report_object_counts }
+    end
+
+    desc 'report_object_count_totals', 'prints to screen the total number of objects for collections'
+    long_desc <<-LONGDESC
+    `exe/cdm report_object_count_totals` displays total count of objects for the collections specified.
+
+    It gives the number of simple objects, the number of compound child objects, and the sum of both.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_object_count_totals
+      colls = get_colls
+      simple = []
+      child = []
+      colls.each{ |coll|
+        coll.report_object_totals.each{ |type, ct|
+          simple << ct if type == 'simple'
+          child << ct if type == 'children'
+        }
+      }
+
+      simplect = simple.sum
+      childct = child.sum
+
+      puts "#{simplect} simple objects"
+      puts "#{childct} compound child objects"
+      puts "#{simplect + childct} total objects"
+
+      puts "NOTES:"
+      puts "If Document-PDF occurs with cdmprintpdf=1, this is counted as 1 simple object. The child pages are not counted."
+      puts "If there are any metadata-only records, they are not counted."
     end
 
     desc 'report_object_filesize_mismatches', 'prints to screen the collection alias/pointers for harvested objects with filesize mismatches'

@@ -1,3 +1,4 @@
+
 require 'cdmtools'
 
 module Cdmtools
@@ -14,6 +15,7 @@ module Cdmtools
     attr_reader :objs_by_category #hash of pointers organized under keys 'compound', 'compound pdf', and 'simple'
     attr_reader :simpleobjs #list of pointers to simple objects in the collection
     attr_reader :compoundobjs #list of pointers to compound objects (top level) in the collection
+    attr_reader :childobjs #list of pointers to compound object children in the collection
     attr_reader :migrecs #array of migration record filenames
 
     # initialized with hash of collection data from API output
@@ -130,6 +132,49 @@ module Cdmtools
       puts "\n\n#{@alias} - #{@name}"
       pp(@objs_by_category)
     end
+
+    def report_error_records
+      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_records.csv"
+      errs = get_error_records
+      if errs.length > 0
+        if File::exist?(report_path)
+          # just write the data
+          CSV.open(report_path, 'a'){ |csv|
+            errs.each{ |err| csv << err }
+          }
+        else
+          # write the headers, then write the data
+          CSV.open(report_path, "wb"){ |csv|
+            csv << ['collection', 'pointer', 'code', 'message', 'restrictionCode']
+            errs.each{ |err| csv << err }
+          }
+        end
+      end
+    end
+
+    def get_error_records
+      err_recs = []
+      Dir.new(@cdmrecdir).children.each{ |recfile|
+        recpath = "#{@cdmrecdir}/#{recfile}"       
+        rec = JSON.parse(File.read(recpath))
+        if rec['message']          
+          pointer = recfile.delete('.json')
+#          puts "#{@alias}/#{pointer}"
+          message = rec['message']
+          code = rec['code'] ? rec['code'] : ''
+          rc = rec['restrictionCode'] ? rec['restrictionCode'] : ''
+          err_recs << [@alias, pointer, code, message, rc]
+        end
+      }
+      return err_recs
+    end
+    
+    def report_object_totals
+      create_objs_by_category
+      return { 'simple' => @simpleobjs.length,
+              'children' => @childobjs.length
+             }
+    end
     
     def report_object_stats
       create_objs_by_category
@@ -195,7 +240,7 @@ module Cdmtools
       Dir.new(@migrecdir).children.each{ |recname|
         rec = JSON.parse(File.read("#{@migrecdir}/#{recname}"))
         pointer = rec['dmrecord']
-        filetype = rec['migfiletype']
+        filetype = rec['migfiletype'] ? rec['migfiletype'].downcase : 'unknown'
 
         case rec['migobjlevel']
         when 'top'
@@ -260,6 +305,7 @@ module Cdmtools
       }
       set_simpleobjs
       set_compoundobjs
+      set_childobjs
     end
 
     def set_compoundobjs
@@ -270,6 +316,16 @@ module Cdmtools
       @compoundobjs = pointers.flatten
     end
 
+    def set_childobjs
+      pointers = []
+      @objs_by_category['children'].each{ |category, filetypes|
+        filetypes.each{ |filetype, ptrarray|
+          pointers << ptrarray
+        }
+      }
+      @childobjs = pointers.flatten
+    end
+    
     def set_simpleobjs
       pointers = []
       exclude = ['compound', 'children', 'external media']

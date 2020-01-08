@@ -1,7 +1,8 @@
 = Cdmtools
 
-Set of commands/tools to grab data (and eventually objects) from a CONTENTdm instance via https://www.oclc.org/support/services/contentdm/help/customizing-website-help/other-customizations/contentdm-api-reference.en.html[the server and web APIs].
+Set of commands/tools to grab metadata and objects from a CONTENTdm instance via https://www.oclc.org/support/services/contentdm/help/customizing-website-help/other-customizations/contentdm-api-reference.en.html[the server and web APIs].
 
+These files are organized in such a way that the source-system-agnostic https://github.com/lyrasis/mdmm[MDMM] be used to further prepare them for migration.
 
 == Installation
 
