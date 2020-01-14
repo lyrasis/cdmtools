@@ -45,7 +45,7 @@ module Cdmtools
   # if not found, tags record with local field indicating simpleness and object type
   autoload :CompoundObjInfoMerger, 'cdmtools/compound_obj_info_merger'
 
-  autoload :CONFIG, 'cdmtools/config_reader'
+  autoload :ConfigReader, 'cdmtools/config_reader'
 
   # uses API call to grab DC field spec from CDM
   autoload :DcMappingGetter, 'cdmtools/dc_mapping_getter'

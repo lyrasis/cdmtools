@@ -1,8 +1,13 @@
 require 'cdmtools'
 
 module Cdmtools
-    
   class CommandLine < Thor
+    def initialize(*args)
+      super(*args)
+      # TODO: replace constant
+      Cdmtools.const_set('CONFIG', Cdmtools::ConfigReader.new(config: options[:config]))
+    end
+
     no_commands{
       def get_colls
         if options[:coll].empty?
@@ -16,15 +21,17 @@ module Cdmtools
       end
     }
     
+    class_option :config, type: 'string', default: 'config/config.yaml', aliases: '-c'
+
     map %w[--version -v] => :__version
     desc '--version, -v', 'print the version'
     def __version
       puts "CDMtools version #{Cdmtools::VERSION}, installed #{File.mtime(__FILE__)}"
     end
 
-    map %w[--config -c] => :__config
-    desc '--config, -c', 'print out your config settings'
-    def __config
+    map %w[--settings -s] => :__settings
+    desc '--settings, -s', 'print out your config settings'
+    def __settings
       puts "\nYour project working directory:"
       puts Cdmtools::CONFIG.wrk_dir
       puts "\nYour API base URL:"
@@ -293,6 +300,5 @@ Writes csv of problem record data (`problem_records.csv`) to CDM working directo
       puts "Cumulative object filesize: #{sizes.sum}"
       puts "NOTE: does not include cdmprintpdf documents treated as simple objects"
     end
-
   end
 end
