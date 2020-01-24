@@ -19,7 +19,18 @@ Clone this repo.
 
 `bundle install`
 
-Copy `config/config.yaml.example` to `config/config.yaml` and edit the new file with your details.
+=== Configuration
+
+*If you will only work on one project and/or don't plan on contributing code back to this repo...*
+You can edit `config/config.yaml` in place to set up your project. When you run commands, this default config location will be used.
+
+*If you will be working on multiple projects, need to keep your config(s) in a place where they can be backed up, or you want to avoid contributing your configs back to this repo...*
+
+Copy `config/config.yaml` to your desired location and edit the copy. Specify the path to the desired config when you run a command, like this:
+
+`exe/cdm show_config --config=path/to/your/cdm_config.yaml`
+
+The example `config.yaml` included with the repo is heavily commented and intends to be self-documenting.
 
 == Usage
 

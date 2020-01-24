@@ -13,9 +13,11 @@ module Cdmtools
     attr_reader :mv_delimiter
     attr_reader :not_multivalued
     attr_reader :replacements
-    
-    def initialize
-      config = YAML.load_file('config/config.yaml')
+
+    def initialize(config: 'config/config.yaml')
+      config = YAML.load_file(
+        File.expand_path(ENV.fetch('CDMTOOLS_CFG', config))
+      )
       @wrk_dir = config['wrk_dir']
       @api_base = config['cdm_ws_url']
       @util_base = config['utils_url']
@@ -29,6 +31,4 @@ module Cdmtools
       @replacements = config['replacements']
     end
   end
-
-  CONFIG = Cdmtools::ConfigReader.new
 end
