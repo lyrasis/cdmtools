@@ -10,6 +10,7 @@ module Cdmtools
     attr_reader :migrecdir #directory for object records modified with migration-specific data
     attr_reader :cleanrecdir #directory for transformed/cleaned migration records
     attr_reader :cdmobjectinfodir #directory for CDM compound object info
+    attr_reader :packagedir #directory for Islandora ingest packages
     attr_reader :objdir #directory for object files
     attr_reader :pointerfile #path to file where pointer list will be written
     attr_reader :objs_by_category #hash of pointers organized under keys 'compound', 'compound pdf', and 'simple'
@@ -374,8 +375,9 @@ module Cdmtools
       @cleanrecdir = "#{@colldir}/_cleanrecords"
       @migrecdir = "#{@colldir}/_migrecords"
       @objdir = "#{@colldir}/_objects"
+      @packagedir = "#{@colldir}/_packages"
       
-      [@cdmrecdir, @cdmobjectinfodir, @cleanrecdir, @migrecdir, @objdir].each{ |dirpath|
+      [@cdmrecdir, @cdmobjectinfodir, @cleanrecdir, @migrecdir, @objdir, @packagedir].each{ |dirpath|
         Dir::mkdir(dirpath) unless Dir::exist?(dirpath)
       }
     end
