@@ -31,6 +31,7 @@ module Cdmtools
 
     def finalize
       set_filetype
+      fix_pdf_filetype
       set_external_media
       set_islandora_content_model
       write_record
@@ -95,6 +96,12 @@ module Cdmtools
       end
     end
 
+    def fix_pdf_filetype
+      if @json['migfiletype'] == 'cpd' && @json['cdmprintpdf'] == '1'
+        @json['migfiletype'] = 'pdf'
+      end
+    end
+    
     def set_external_media
       if @json['migfiletype'] && @json['migfiletype'] == 'url'
         @json['migobjcategory'] = 'external media'
