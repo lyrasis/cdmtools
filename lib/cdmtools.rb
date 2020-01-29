@@ -52,7 +52,7 @@ module Cdmtools
   
   # given collection object, runs through all migration records and adds `migfiletype`
   #  field to each
-  autoload :FileTypeSetter, 'cdmtools/file_type_setter'
+  autoload :MigrecFinalizer, 'cdmtools/migrec_finalizer'
 
   autoload :JsonCsvWriter, 'cdmtools/json_csv_writer'
 
@@ -66,6 +66,9 @@ module Cdmtools
   
   # given collection object and pointer, calls dmGetItemInfo, writes record to JSON
   autoload :RecordGetter, 'cdmtools/record_getter'
+
+  autoload :Record, 'cdmtools/record'
+  autoload :Migrecord, 'cdmtools/record'
 
   autoload :VERSION, 'cdmtools/version'
 
