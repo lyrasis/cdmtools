@@ -57,7 +57,7 @@ module Cdmtools
         Cdmtools::LOG.error("No parent records in #{@migrecdir}. Cannot get finalize records")
         return
       else
-        FileTypeSetter.new(self)
+        MigrecFinalizer.new(self)
       end
     end
     
