@@ -90,6 +90,8 @@ module Cdmtools
         if  size > 0
           ChildRecordGetter.new(self, force)
           ChildInfoMergeHandler.new(self)
+        else
+          Cdmtools::LOG.debug("No compound objects in #{@alias}. No child records retrieved")
         end
       end
     end

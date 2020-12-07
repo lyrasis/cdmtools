@@ -27,13 +27,16 @@ module Cdmtools
   class Migrecord < Record
     def initialize(coll, path)
       super
+      @errors = []
     end
 
     def finalize
       set_filetype
+      if @errors.empty?
       fix_pdf_filetype
       set_external_media
       set_islandora_content_model
+      end
       write_record
     end
 
@@ -42,7 +45,14 @@ module Cdmtools
       when 'top'
         case @json['migobjcategory']
         when 'simple'
-          icm = content_model(@json['migfiletype'].downcase)
+          filetype = @json['migfiletype']
+          model = content_model_lookup(filetype)
+          if model
+            icm = model
+          elsif filetype == 'pdfpage' && @json['cdmprintpdf'] == '0'
+            @errors << 'Orphaned top level PDF page with no associated file. Cannot migrate'
+            icm = 'cannotMigrate'
+          end
         when 'external media'
           icm = 'sp_basic_image'
         when 'compound'
@@ -59,7 +69,7 @@ module Cdmtools
             icm = 'compoundCModel'
           end
         end
-      
+        
         if icm
           @json['islandora_content_model'] = icm
         else
@@ -68,7 +78,7 @@ module Cdmtools
       end
     end
 
-    def content_model(file_ext)
+    def content_model_lookup(file_ext)
       lookup = {
         'jp2' => 'sp_large_image_cmodel',
         'jpg' => 'sp_basic_image',
@@ -76,11 +86,7 @@ module Cdmtools
         'pdf' => 'sp_pdf',
         'tif' => 'sp_large_image_cmodel',
       }
-      if lookup.has_key?(file_ext)
-        return lookup[file_ext]
-      else
-        puts "Cannot determine Islandora content model for filetype: #{file_ext}"
-      end
+      lookup.fetch(file_ext.downcase, nil)
     end
     
     
@@ -90,6 +96,9 @@ module Cdmtools
         if rec_find
           filetype = rec_find.sub(/.*?\./, '')
           @json['migfiletype'] = filetype
+        elsif @json['code'] == '-2'
+          @errors << 'Requested item not found. Possibly set to restricted access.'
+          Cdmtools::LOG.warn("Could not retrieve record for #{@path}. Restricted access issue?")
         else
           Cdmtools::LOG.error("Cannot determine file type for #{@path}")
         end
