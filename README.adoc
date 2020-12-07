@@ -28,7 +28,7 @@ You can edit `config/config.yaml` in place to set up your project. When you run 
 
 Copy `config/config.yaml` to your desired location and edit the copy. Specify the path to the desired config when you run a command, like this:
 
-`exe/cdm show_config --config=path/to/your/cdm_config.yaml`
+`exe/cdm --settings -c path/to/your/cdm_config.yaml`
 
 The example `config.yaml` included with the repo is heavily commented and intends to be self-documenting.
 
@@ -82,6 +82,7 @@ https://github.com/lyrasis/mdmm[MDMM] expects collection directories containing 
 
 At this point, you can see the number of collections you are working with and the way the metadata fields have been defined for them.
 
+- get_pointers
 - get_top_records
 
 Check your logfile for any errors or warnings at this point and resolve them before continuing, or your problems will just be compounded.

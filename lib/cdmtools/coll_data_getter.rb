@@ -4,7 +4,8 @@ module Cdmtools
   class CollDataGetter
     attr_reader :colldata # the hash of collection data
 
-    def initialize()
+    def initialize
+      @config_colls = get_config_colls
       api = Cdmtools::CONFIG.api_base
       url = URI("#{api}dmGetCollectionList/json")
       result = Net::HTTP.get_response(url)
@@ -16,14 +17,26 @@ module Cdmtools
         puts 'Could not retrieve coll data from API.'
         exit
       end
-      
+
       clean_aliases
+      keep_config_colls
       write_csv
       write_json
       make_coll_directories
     end
 
     private
+
+    def get_config_colls
+      Cdmtools::CONFIG.colls.nil? ? [] : Cdmtools::CONFIG.colls
+    end
+    
+    def keep_config_colls
+      return @colldata if @config_colls.empty?
+      return @colldata if @colldata.length == @config_colls.length
+      keeping = @colldata.select{ |h| @config_colls.include?(h['alias']) }
+      @colldata = keeping
+    end
     
     def clean_aliases
       @colldata.each{ |h| h['alias'] = h['alias'].sub('/', '') }

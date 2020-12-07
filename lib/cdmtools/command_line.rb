@@ -10,9 +10,13 @@ module Cdmtools
 
     no_commands{
       def get_colls
-        if options[:coll].empty?
-          # initializing CollDataParser with empty array will return all colls
-          coll_list = []
+        if options[:coll].nil? || options[:coll].empty?
+          # initializing CollDataParser with empty array will return all colls if none are specified in config
+          if Cdmtools::CONFIG.colls.length > 0
+            coll_list = Cdmtools::CONFIG.colls
+          else
+            coll_list = []
+          end
         else
           # or just work on the colls specified
           coll_list = options[:coll].split(',')
@@ -38,6 +42,8 @@ module Cdmtools
       puts Cdmtools::CONFIG.api_base
       puts "\nYour cdminspect path:"
       puts Cdmtools::CONFIG.cdminspect
+      puts "\nYour specified collections:"
+      CONFIG.colls.each{ |c| puts c }
     end
     
     desc 'get_coll_data', 'get information about collections from API'

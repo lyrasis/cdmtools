@@ -12,6 +12,12 @@ utils_url: https://your.digital-colls.edu/utils
 # cdminspect directory path -- cdminspect is available from https://github.com/mjordan/cdminspect
 cdminspectpath: /home/username/code/cdminspect
 
+# collections to include in the migration
+# Uncomment and populate this only if you are migrating only selected collections from the CDM instance
+# collections:
+#   - coll1
+#   - coll7
+
 # path to application log file
 logfile: /opt/migrations/clientdirectory/cdm/cdmtools.log
 

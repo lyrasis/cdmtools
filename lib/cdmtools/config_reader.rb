@@ -6,6 +6,7 @@ module Cdmtools
     attr_reader :api_base
     attr_reader :util_base
     attr_reader :cdminspect
+    attr_reader :colls
     attr_reader :logfile
     attr_reader :sleeptime
     attr_reader :reporting_ignore_field_prefixes
@@ -22,6 +23,7 @@ module Cdmtools
       @api_base = config['cdm_ws_url']
       @util_base = config['utils_url']
       @cdminspect = config['cdminspectpath']
+      @colls = config['collections']
       @logfile = config['logfile']
       @sleeptime = config['sleeptime']
       @reporting_ignore_field_prefixes = config['reporting_ignore_field_prefixes']

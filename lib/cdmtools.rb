@@ -7,6 +7,7 @@ require 'yaml'
 
 # external gems
 require 'progressbar'
+require 'pry'
 require 'thor'
 
 module Cdmtools
