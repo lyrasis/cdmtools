@@ -76,14 +76,14 @@ https://github.com/lyrasis/mdmm[MDMM] expects collection directories containing 
 
 ==== Data/metadata profiling
 
-- get_coll_data
-- get_dc_mappings
-- get_field_data
+- `get_coll_data`
+- `get_dc_mappings`
+- `get_field_data`
 
 At this point, you can see the number of collections you are working with and the way the metadata fields have been defined for them.
 
-- get_pointers
-- get_top_records
+- `get_pointers`
+- `get_top_records`
 
 Check your logfile for any errors or warnings at this point and resolve them before continuing, or your problems will just be compounded.
 
@@ -93,18 +93,30 @@ This means you can just re-run the above command to try to re-grab any records t
 
 Use `--force=true` to re-download records and compoundobject info you already retrieved.
 
-- get_child_records
+- `get_child_records`
 
 Use `--force=true` to re-download records you already retrieved.
 
-Again, check your logfile after this step
+Again, check your logfile for warnings or errors after this step
 
-- finalize_migration_records
+- `report_cdm_error_records`
 
-*Now you can use https://github.com/lyrasis/mdmm[MDMM] to handle data reporting, cleanup, and remapping.*
+This will write a CSV report of pointers for which a valid/usable record could not be retrieved from the CDM API.
+
+- `delete_cdm_error_records`
+
+Optionally, get rid of these records so they don't cause trouble in the rest of the migration. If restrictions are removed or other problems taken care of, you can re-download just the missing records using `get_top_records` and `get_child_records` with `--force=true`. If new objects have been added you'll need to re-run `get_pointers` before re-grabbing records. 
+
+- `finalize_migration_records`
+
+Again, check your logfile for warnings or errors.
+
+`report_mig_error_records` and `delete_mig_error_records` work similarly to the aforementioned CDM-record specific commands, but flag objects with issues like unknown islandora content model, or orphaned pdfpage with no associated file. 
+
+*At this point, you can use https://github.com/lyrasis/mdmm[MDMM] to handle metadata reporting, cleanup, and remapping.*
 
 ==== Object data
-- harvest_objects
+- `harvest_objects`
 
 Check logfile for errors/warnings after this step.
 

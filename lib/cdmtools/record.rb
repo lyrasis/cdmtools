@@ -27,7 +27,7 @@ module Cdmtools
   class Migrecord < Record
     def initialize(coll, path)
       super
-      @errors = []
+      @errors = @json['errors'] ? @json['errors'] : []
     end
 
     def finalize
@@ -37,8 +37,15 @@ module Cdmtools
       set_external_media
       set_islandora_content_model
       end
+      @json['errors'] = @errors
       write_record
     end
+
+    def valid?
+      @errors.empty? ? true : false
+    end
+    
+    private
 
     def set_islandora_content_model
       case @json['migobjlevel']

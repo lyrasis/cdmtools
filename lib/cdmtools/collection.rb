@@ -136,41 +136,48 @@ module Cdmtools
       pp(@objs_by_category)
     end
 
-    def report_error_records
-      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_records.csv"
-      errs = get_error_records
+    def report_cdm_error_records(path)
+      errs = get_cdm_error_records
       if errs.length > 0
-        if File::exist?(report_path)
+        puts "#{@alias} : #{errs.length} error records. See #{path} for details."
+        if File::exist?(path)
           # just write the data
-          CSV.open(report_path, 'a'){ |csv|
+          CSV.open(path, 'a'){ |csv|
             errs.each{ |err| csv << err }
           }
         else
           # write the headers, then write the data
-          CSV.open(report_path, "wb"){ |csv|
+          CSV.open(path, "wb"){ |csv|
             csv << ['collection', 'pointer', 'code', 'message', 'restrictionCode']
             errs.each{ |err| csv << err }
           }
         end
+      else
+          puts "#{@alias} : #{errs.length} error records."
       end
     end
 
-    def get_error_records
-      err_recs = []
-      Dir.new(@cdmrecdir).children.each{ |recfile|
-        recpath = "#{@cdmrecdir}/#{recfile}"       
-        rec = JSON.parse(File.read(recpath))
-        if rec['message']          
-          pointer = recfile.delete('.json')
-          message = rec['message']
-          code = rec['code'] ? rec['code'] : ''
-          rc = rec['restrictionCode'] ? rec['restrictionCode'] : ''
-          err_recs << [@alias, pointer, code, message, rc]
+    def report_mig_error_records(path)
+      errs = get_mig_error_records
+      if errs.length > 0
+        puts "#{@alias} : #{errs.length} error records. See #{path} for details."
+        if File::exist?(path)
+          # just write the data
+          CSV.open(path, 'a'){ |csv|
+            errs.each{ |err| csv << err }
+          }
+        else
+          # write the headers, then write the data
+          CSV.open(path, "wb"){ |csv|
+            csv << ['collection', 'pointer', 'code', 'message', 'restrictionCode']
+            errs.each{ |err| csv << err }
+          }
         end
-      }
-      return err_recs
+      else
+        puts "#{@alias} : #{errs.length} error records."
+      end
     end
-    
+
     def report_object_totals
       create_objs_by_category
       return { 'simple' => @simpleobjs.length,
@@ -183,7 +190,7 @@ module Cdmtools
       puts "\n\n#{@alias} - #{@name}"
       puts "SIMPLE OBJECTS"
       @objs_by_category.each{ |k, v|
-        unless k == 'compound' || k == 'children'
+        unless k == 'compound' || k == 'children' || k == 'errors'
           puts "  #{k}: #{v.length}" unless v.empty?
         end
       }
@@ -199,11 +206,16 @@ module Cdmtools
         unless v.empty?
           puts "  #{k}: #{v.length}"
           puts "    CHILD OBJECTS"
-          @objs_by_category['children'][k].each{ |ft, ptrs|
+          @objs_by_category['children'][k].each do |ft, ptrs|
             puts "      #{ft}: #{ptrs.length}"
-          }
+          end
         end
       }
+
+      unless @objs_by_category['errors'].empty?
+        puts "ERRORS"
+        @objs_by_category['errors'].each{ |err, ptrs| puts "  #{err}: #{ptrs.length}" }
+      end
     end
     
     def report_object_filesize_mismatches
@@ -217,7 +229,7 @@ module Cdmtools
       }
       to_check.flatten.each{ |pointer|
         rec = get_migrec(pointer)
-        fileext = rec['migfiletype']
+        fileext = rec.json['migfiletype']
         filesize = get_filesize(pointer)
         obj = "#{@objdir}/#{pointer}.#{fileext}"
         objsize = File.size(obj)
@@ -230,7 +242,7 @@ module Cdmtools
       size = 0
       @simpleobjs.each{ |pointer|
         rec = get_migrec(pointer)
-        filetype = rec['migfiletype'].downcase
+        filetype = rec.json['migfiletype'].downcase
         size += get_filesize(pointer) unless filetype == 'pdf'
       }
       @childobjs.each{ |pointer|
@@ -242,12 +254,38 @@ module Cdmtools
     private
 
     def get_migrec(pointer)
-      JSON.parse(File.read("#{@migrecdir}/#{pointer}.json"))
+      Cdmtools::Migrecord.new(self, "#{@migrecdir}/#{pointer}.json")
+    end
+
+    def get_cdm_error_records
+      err_recs = []
+      Dir.new(@cdmrecdir).children.each{ |recfile|
+        recpath = "#{@cdmrecdir}/#{recfile}"       
+        rec = JSON.parse(File.read(recpath))
+        if rec['message']          
+          pointer = recfile.delete('.json')
+          message = rec['message']
+          code = rec['code'] ? rec['code'] : ''
+          rc = rec['restrictionCode'] ? rec['restrictionCode'] : ''
+          err_recs << [@alias, pointer, code, message, rc]
+        end
+      }
+      return err_recs
+    end
+
+    def get_mig_error_records
+      err_recs = []
+      set_migrecs
+      @migrecs.map{ |filename| filename.delete('.json') }.each do |pointer|
+        rec = get_migrec(pointer)
+        err_recs << [@alias, pointer, rec.json['errors'].join('; ')] unless rec.valid?
+      end
+      err_recs
     end
 
     def get_filesize(pointer)
       rec = get_migrec(pointer)
-      filesize = rec['cdmfilesize'] ? rec['cdmfilesize'].to_i : 0
+      filesize = rec.json['cdmfilesize'] ? rec.json['cdmfilesize'].to_i : 0
       filesize
     end
     
@@ -270,16 +308,29 @@ module Cdmtools
           'postcard' => {},
           'picture cube' => {},
           'other' => {}
-        }
+        },
+        'errors' => {}
       }
       Dir.new(@migrecdir).children.each{ |recname|
-        rec = JSON.parse(File.read("#{@migrecdir}/#{recname}"))
-        pointer = rec['dmrecord']
-        filetype = rec['migfiletype'] ? rec['migfiletype'].downcase : 'unknown'
+        #rec = JSON.parse(File.read("#{@migrecdir}/#{recname}"))
+        rec = Cdmtools::Migrecord.new(self, "#{@migrecdir}/#{recname}")
+        pointer = rec.json['dmrecord']
 
-        case rec['migobjlevel']
+        unless rec.valid?
+          rec.json['errors'].each do |err|
+            if @objs_by_category['errors'].key?(err)
+              @objs_by_category['errors'][err] << pointer
+            else
+              @objs_by_category['errors'][err] = [pointer]
+            end
+          end
+        end
+        
+        filetype = rec.json['migfiletype'] ? rec.json['migfiletype'].downcase : 'unknown'
+
+        case rec.json['migobjlevel']
         when 'top'
-          case rec['migobjcategory']
+          case rec.json['migobjcategory']
             when 'simple'
               if @objs_by_category.has_key?(filetype)
                 @objs_by_category[filetype] << pointer
@@ -289,10 +340,10 @@ module Cdmtools
             when 'external media'
               @objs_by_category['external media'] << pointer
             when 'compound'
-              case rec['migcompobjtype']
+              case rec.json['migcompobjtype']
               when 'Document-PDF'
-                  @objs_by_category['pdf'] << pointer if rec['cdmprintpdf'] == '1'
-                  @objs_by_category['compound']['document-PDF'] << pointer if rec['cdmprintpdf'] == '0'
+                  @objs_by_category['pdf'] << pointer if rec.json['cdmprintpdf'] == '1'
+                  @objs_by_category['compound']['document-PDF'] << pointer if rec.json['cdmprintpdf'] == '0'
               when 'Document'
                 @objs_by_category['compound']['document'] << pointer
               when 'Picture Cube'
@@ -304,7 +355,7 @@ module Cdmtools
               end
             end
         when 'child'
-          case rec['migobjcategory']
+          case rec.json['migobjcategory']
           when 'Document-PDF'
             if @objs_by_category['children']['document-PDF'].has_key?(filetype) 
               @objs_by_category['children']['document-PDF'][filetype] << pointer
