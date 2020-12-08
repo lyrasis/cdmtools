@@ -222,19 +222,24 @@ module Cdmtools
       create_objs_by_category
       to_check = []
       @objs_by_category.each{ |category, data|
-        to_check << data unless ['external media', 'pdf', 'compound', 'children'].include?(category)
+        to_check << data unless ['external media', 'pdf', 'compound', 'children', 'errors'].include?(category)
       }
-      @objs_by_category['children'].each{ |category, byfiletypes|
-        byfiletypes.each{ |filetype, pointers| to_check << pointers }
-      }
-      to_check.flatten.each{ |pointer|
-        rec = get_migrec(pointer)
-        fileext = rec.json['migfiletype']
-        filesize = get_filesize(pointer)
-        obj = "#{@objdir}/#{pointer}.#{fileext}"
-        objsize = File.size(obj)
-        puts "#{@alias}/#{pointer}.#{fileext} -- in rec: #{filesize} -- on disk: #{objsize}" if filesize != objsize
-      }
+      unless @objs_by_category['children'].empty?
+        @objs_by_category['children'].each do |category, byfiletypes|
+          byfiletypes.each{ |filetype, pointers| to_check << pointers }
+        end
+      end
+
+      unless to_check.empty?
+        to_check.flatten.each do |pointer|
+          rec = get_migrec(pointer)
+          fileext = rec.json['migfiletype']
+          filesize = get_filesize(pointer)
+          obj = "#{@objdir}/#{pointer}.#{fileext}"
+          objsize = File.size(obj)
+          puts "#{@alias}/#{pointer}.#{fileext} -- in rec: #{filesize} -- on disk: #{objsize}" if filesize != objsize
+        end
+      end
     end
     
     def report_object_size
