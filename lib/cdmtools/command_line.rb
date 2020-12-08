@@ -10,9 +10,13 @@ module Cdmtools
 
     no_commands{
       def get_colls
-        if options[:coll].empty?
-          # initializing CollDataParser with empty array will return all colls
-          coll_list = []
+        if options[:coll].nil? || options[:coll].empty?
+          # initializing CollDataParser with empty array will return all colls if none are specified in config
+          if Cdmtools::CONFIG.colls.length > 0
+            coll_list = Cdmtools::CONFIG.colls
+          else
+            coll_list = []
+          end
         else
           # or just work on the colls specified
           coll_list = options[:coll].split(',')
@@ -38,6 +42,8 @@ module Cdmtools
       puts Cdmtools::CONFIG.api_base
       puts "\nYour cdminspect path:"
       puts Cdmtools::CONFIG.cdminspect
+      puts "\nYour specified collections:"
+      CONFIG.colls.each{ |c| puts c }
     end
     
     desc 'get_coll_data', 'get information about collections from API'
@@ -142,36 +148,80 @@ module Cdmtools
       colls.each{ |coll| coll.get_child_records(options[:force]) }
     end
 
-    desc 'report_error_records', 'produce report of missing/error cdmrecords'
+    desc 'report_cdm_error_records', 'produce report of missing/error cdmrecords'
     long_desc <<-LONGDESC
-    `exe/cdm report_error_records` runs per collection. It looks at each metadata record in the collection's `_cdmrecords` directory and reports back `code`, `message`, and `restrictionCode` field values if present.
+    Runs per collection. It looks at each metadata record in the collection's `_cdmrecords` directory and reports back `code`, `message`, and `restrictionCode` field values if present.
 
 CDM API does not return an HTTP error status if an actual record cannot be returned, so we end up with these stub records that must be detected and handled after the fact.
 
-Writes csv of problem record data (`problem_records.csv`) to CDM working directory.
+Writes csv of problem record data (`problem_cdm_records.csv`) to CDM working directory.
     LONGDESC
     option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
-    def report_error_records
-      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_records.csv"
+    def report_cdm_error_records
+      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_cdm_records.csv"
       File.delete(report_path) if File::exist?(report_path)
       colls = get_colls
-      colls.each{ |coll| coll.report_error_records }
+      colls.each{ |coll| coll.report_cdm_error_records(report_path) }
     end
 
-    desc 'delete_error_records', 'delete missing/error cdmrecords and migrecs, based on problem record report'
+    desc 'delete_cdm_error_records', 'delete missing/error cdmrecords and migrecs, based on problem record report'
     long_desc <<-LONGDESC
-    `exe/cdm delete_error_records` runs on the problem_records.csv file created via the `report_error_records` command. If there is no problem_records.csv file in the working directory, it does nothing. Otherwise, it goes through that file and deletes the records listed in it. 
+    Runs on the problem_cdm_records.csv file created via the `report_error_records` command. If there is no problem_records.csv file in the working directory, it does nothing. Otherwise, it goes through that file and deletes the records listed in it from the _cdmrecords, _migrecords, and _cleanrecords directories. 
     LONGDESC
-    def delete_error_records
-      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_records.csv"
-      if File::exist?(report_path)
-        CSV.read(report_path, headers: true).each{ |err|
+    def delete_cdm_error_records
+      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_cdm_records.csv"
+      if File.file?(report_path)
+        puts "Records deleted from cdm, mig, clean record directories:"
+        CSV.read(report_path, headers: true).each do |err|
           colldir = "#{Cdmtools::CONFIG.wrk_dir}/#{err['collection']}"
-          cdmrec = "#{colldir}/_cdmrecords/#{err['pointer']}.json"
-          migrec = "#{colldir}/_migrecords/#{err['pointer']}.json"
-          cleanrec = "#{colldir}/_cleanrecords/#{err['pointer']}.json"
-          [cdmrec, migrec, cleanrec].each{ |rec| File.delete(rec) if File::exist?(rec) }
-        }
+          pointer = err['pointer']
+          cdmrec = "#{colldir}/_cdmrecords/#{pointer}.json"
+          migrec = "#{colldir}/_migrecords/#{pointer}.json"
+          cleanrec = "#{colldir}/_cleanrecords/#{pointer}.json"
+          [cdmrec, migrec, cleanrec].each{ |rec| File.delete(rec) if File.file?(rec) }
+          puts "  #{err['collection']}/#{pointer}"
+        end
+      else
+        puts 'No CDM error records to delete.'
+      end
+    end
+
+    desc 'report_mig_error_records', 'produce report of error migrecords that will not be able to be migrated'
+    long_desc <<-LONGDESC
+    Runs per collection. It looks at each metadata record in the collection's `_migrecords` directory and reports back the collection, pointer, and any errors present.
+
+    Errors might include records that could not be retrieved from CDM (if not caught with `report/delete_cdm_error_records`, or "top level" records that are pdfpages with no retrievable file.
+
+Writes csv of problem record data (`problem_mig_records.csv`) to CDM working directory.
+    LONGDESC
+    option :coll, :desc => 'comma-separated list of collection aliases to include in processing', :default => ''
+    def report_mig_error_records
+      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_mig_records.csv"
+      File.delete(report_path) if File::exist?(report_path)
+      colls = get_colls
+      colls.each{ |coll| coll.report_mig_error_records(report_path) }
+    end
+
+    desc 'delete_mig_error_records', 'delete missing/error cdmrecords and migrecs, based on problem record report'
+    long_desc <<-LONGDESC
+    Runs on the problem_cdm_records.csv file created via the `report_error_records` command. If there is no problem_records.csv file in the working directory, it does nothing. Otherwise, it goes through that file and deletes the records listed in it from the _migrecords, and _cleanrecords directories.
+
+    The original CDM records are not deleted, so that they may be examined locally. 
+    LONGDESC
+    def delete_mig_error_records
+      report_path = "#{Cdmtools::CONFIG.wrk_dir}/problem_mig_records.csv"
+      if File.file?(report_path)
+        puts "Records deleted from mig, clean record directories:"
+        CSV.read(report_path, headers: true).each do |err|
+          colldir = "#{Cdmtools::CONFIG.wrk_dir}/#{err['collection']}"
+          pointer = err['pointer']
+          migrec = "#{colldir}/_migrecords/#{pointer}.json"
+          cleanrec = "#{colldir}/_cleanrecords/#{pointer}.json"
+          [migrec, cleanrec].each{ |rec| File.delete(rec) if File.file?(rec) }
+          puts "  #{err['collection']}/#{pointer}"
+        end
+      else
+        puts 'No mig error records to delete.'
       end
     end
 
