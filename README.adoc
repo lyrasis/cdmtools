@@ -113,6 +113,8 @@ Again, check your logfile for warnings or errors.
 
 `report_mig_error_records` and `delete_mig_error_records` work similarly to the aforementioned CDM-record specific commands, but flag objects with issues like unknown islandora content model, or orphaned pdfpage with no associated file. 
 
+Run `exe/cdm` to see some other report options
+
 *At this point, you can use https://github.com/lyrasis/mdmm[MDMM] to handle metadata reporting, cleanup, and remapping.*
 
 ==== Object data
