@@ -99,11 +99,11 @@ Use `--force=true` to re-download records you already retrieved.
 
 Again, check your logfile for warnings or errors after this step
 
-- `report_cdm_error_records`
+- `report_error_records`
 
 This will write a CSV report of pointers for which a valid/usable record could not be retrieved from the CDM API.
 
-- `delete_cdm_error_records`
+- `delete_error_records`
 
 Optionally, get rid of these records so they don't cause trouble in the rest of the migration. If restrictions are removed or other problems taken care of, you can re-download just the missing records using `get_top_records` and `get_child_records` with `--force=true`. If new objects have been added you'll need to re-run `get_pointers` before re-grabbing records. 
 
