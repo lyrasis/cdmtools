@@ -2,6 +2,10 @@ require 'cdmtools'
 
 module Cdmtools
   class CommandLine < Thor
+    def self.exit_on_failure?
+      true
+    end
+
     def initialize(*args)
       super(*args)
       # TODO: replace constant
