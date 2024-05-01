@@ -1,4 +1,5 @@
 require 'cdmtools'
+require_relative "file_harvester"
 require_relative "helpers"
 
 module Cdmtools
@@ -112,18 +113,6 @@ module Cdmtools
       return objs.length
     end
   end
-  
-  class FileHarvester
-    def initialize(url, path)
-        response = Net::HTTP.get_response(URI(url))
-        if response.is_a?(Net::HTTPSuccess)
-          File.open(path, 'wb'){ |f| f.write(response.body) }
-          sleep(1)
-        else
-          Cdmtools::LOG.error("Could not harvest file: #{url}")
-        end
-    end
-  end
 
   class ObjectHarvester
     attr_reader :pointer
@@ -156,10 +145,12 @@ module Cdmtools
         else
 #          puts "#{@path.inspect} filesize diff: rec: #{fsr.inspect}, file: #{fs.inspect}"
           Cdmtools::FileHarvester.new(@url, @path)
+          Cdmtools::FileHarvester.new.call(url: @url, write_to: @path)
         end
       elsif !File.exist?(@path)
 #        puts "#{@path.inspect} file doesn't exist"
         Cdmtools::FileHarvester.new(@url, @path)
+        Cdmtools::FileHarvester.new.call(url: @url, write_to: @path)
       end
 
     end
