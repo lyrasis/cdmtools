@@ -1,4 +1,5 @@
 require 'cdmtools'
+require_relative "helpers"
 
 module Cdmtools
   class ObjectHarvestHandler
@@ -136,7 +137,11 @@ module Cdmtools
       @filename = "#{@pointer}.#{filetype}"
       @path = "#{objdir}/#{@filename}"
       @coll = coll
-      @url = "#{Cdmtools::CONFIG.util_base}/getfile/collection/#{@coll}/id/#{@pointer}/filename/#{@filename}"
+      @url = Cdmtools::Helpers.object_url(
+        collection: @coll,
+        pointer: @pointer,
+        filename: @filename
+      )
 
       if filetype == 'pdf' && File.exist?(@path)
         Cdmtools::LOG.debug("OBJHARVEST: #{@coll}/#{@filename} exists. Skipped harvest without comparing size.")
