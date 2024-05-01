@@ -4,6 +4,7 @@ require 'json'
 require 'logger'
 require 'net/http'
 require 'yaml'
+require "fileutils"
 
 # external gems
 require 'progressbar'
@@ -62,6 +63,7 @@ module Cdmtools
   # given collection object and pointer, calls dmGetCompoundObjectInfo
   # if object is compound, will write the compound object info to JSON file
   autoload :ObjectInfoGetter, 'cdmtools/object_info_getter'
+  autoload :CsvFileHarvester, "cdmtools/csv_file_harvester"
 
   autoload :ObjectHarvestHandler, 'cdmtools/object_harvest_handler'
   

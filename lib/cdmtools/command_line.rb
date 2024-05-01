@@ -350,5 +350,48 @@ Writes csv of problem record data (`problem_mig_records.csv`) to CDM working dir
       puts "Cumulative object filesize: #{sizes.sum}"
       puts "NOTE: does not include cdmprintpdf documents treated as simple objects"
     end
+
+    desc "harvest_files_from_csv", "harvest files listed in specified CSV file"
+    long_desc <<~LONGDESC
+      `exe/cdm harvest_files_from_csv` provides a way to harvest a list of files
+      outside the structure of a typical cdm migration project.
+
+      The specified CSV must have the following columns: collection, pointer,
+      filename.
+    LONGDESC
+    option :csv, desc: "path to input CSV", required: true
+    option :outdir, desc: "path to directory in which to save harvested files",
+      required: true
+    def harvest_files_from_csv
+      csv = File.expand_path(options[:csv])
+      if File.exist?(csv)
+        begin
+          csvdata = CSV.parse(File.open(csv), headers: true,
+            header_converters: [:symbol])
+        rescue
+          puts "Could not parse CSV file"
+          exit 0
+        end
+      else
+        puts "CSV file does not exist at #{csv}"
+        exit 0
+      end
+
+      outdir = File.expand_path(options[:outdir])
+      unless Dir.exist?(outdir)
+        begin
+          FileUtils.mkdir_p(outdir)
+        rescue
+          puts "#{outdir} directory does not exist and could not be created"
+          exit 0
+        else
+          puts "Created directory: #{outdir}"
+        end
+      end
+
+      Cdmtools::CsvFileHarvester::Handler.new(
+        data: csvdata, outdir: outdir
+      ).call
+    end
   end
 end
